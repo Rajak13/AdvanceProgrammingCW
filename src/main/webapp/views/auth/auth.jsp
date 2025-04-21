@@ -4,7 +4,7 @@
 
 <div class="container" id="container">
     <div class="form-container sign-up-container">
-        <form action="${pageContext.request.contextPath}/auth" method="post">
+        <form action="${pageContext.request.contextPath}/register" method="post">
             <h1>Create Account</h1>
             <input type="text" name="username" placeholder="Username" required>
             <input type="email" name="email" placeholder="Email" required>
@@ -14,9 +14,10 @@
     </div>
 
     <div class="form-container sign-in-container">
-        <form action="${pageContext.request.contextPath}/auth" method="post">
+        <form action="${pageContext.request.contextPath}/login" method="post">
             <h1>Sign In</h1>
             <input type="text" name="username" placeholder="Username" required>
+            <input type="email" name="email" placeholder="Email" required>
             <input type="password" name="password" placeholder="Password" required>
             <a href="#">Forgot your password?</a>
             <button type="submit">Sign In</button>

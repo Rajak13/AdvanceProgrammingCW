@@ -5,15 +5,14 @@ import utils.PasswordUtil;
 import java.sql.*;
 
 public class UserDAO {
-    public User getUserByUsername(String username) throws SQLException {
-        String sql = "SELECT * FROM Users WHERE username = ?";
+    public User getUserByUsername(String email) throws SQLException {
+        String sql = "SELECT * FROM Users WHERE email = ?";
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, username);
+            stmt.setString(1, email);
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
                 User user = new User();
-                user.setUserId(rs.getInt("user_id"));
                 user.setUsername(rs.getString("username"));
                 user.setPasswordHash(rs.getString("password_hash"));
                 return user;
