@@ -1,18 +1,37 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const signUpButton = document.getElementById('signUp');
-    const signInButton = document.getElementById('signIn');
     const container = document.getElementById('container');
-    
-    const togglePanel = (isRightActive) => {
-        container.classList.toggle('right-panel-active', isRightActive);
-        
-        // Force reflow to trigger animations
-        void container.offsetWidth;
+    const urlParams = new URLSearchParams(window.location.search);
+
+    // Clean URL parameter handling
+    const handleUrlParams = () => {
+        if (urlParams.has('registered')) {
+            container.classList.remove('right-panel-active');
+            history.replaceState(null, '', window.location.pathname);
+        }
     };
 
-    signUpButton.addEventListener('click', () => togglePanel(true));
-    signInButton.addEventListener('click', () => togglePanel(false));
+    // Panel toggle with animation safeguards
+    const togglePanel = (action) => {
+        container.classList[action]('right-panel-active');
+        document.activeElement.blur(); // Remove focus from buttons
+    };
+
+    // Event delegation for better performance
+    document.body.addEventListener('click', (e) => {
+        if (e.target.matches('#signUp, #signUp *')) {
+            togglePanel('add');
+        } else if (e.target.matches('#signIn, #signIn *')) {
+            togglePanel('remove');
+        }
+    });
+
+    // Initial setup
+    handleUrlParams();
     
-    // Initialize with correct panel
-    togglePanel(false);
+    // Add keyboard navigation support
+    document.addEventListener('keyup', (e) => {
+        if (e.key === 'Escape' && container.classList.contains('right-panel-active')) {
+            togglePanel('remove');
+        }
+    });
 });
