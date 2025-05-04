@@ -14,42 +14,34 @@
         <session-timeout>30</session-timeout>
     </session-config>
 
-  <!-- Add filter configurations if needed -->
-  <filter>
-    <filter-name>AuthFilter</filter-name>
-    <filter-class>filters.AuthFilter</filter-class>
-  </filter>
-  <filter-mapping>
-    <filter-name>AuthFilter</filter-name>
-    <url-pattern>/protected/*</url-pattern>
-  </filter-mapping>
 
-<!-- Allow access to auth page -->
-<security-constraint>
-    <web-resource-collection>
-        <web-resource-name>Public Pages</web-resource-name>
-        <url-pattern>/auth</url-pattern>
-        <url-pattern>/register</url-pattern>
-        <url-pattern>/login</url-pattern>
-    </web-resource-collection>
-</security-constraint>
+    <filter>
+        <filter-name>AuthFilter</filter-name>
+        <filter-class>filters.AuthFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>AuthFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
 
-<!-- Static Resource Configuration -->
-<servlet-mapping>
-    <servlet-name>default</servlet-name>
-    <url-pattern>/css/*</url-pattern>
-    <url-pattern>/js/*</url-pattern>
-    <url-pattern>/images/*</url-pattern>
-    <url-pattern>/fonts/*</url-pattern>
-</servlet-mapping>
+    <!-- Allow access to auth page -->
+    <security-constraint>
+        <web-resource-collection>
+            <web-resource-name>Public Pages</web-resource-name>
+            <url-pattern>/auth/*</url-pattern>
+            <url-pattern>/css/*</url-pattern>
+            <url-pattern>/js/*</url-pattern>
+            <url-pattern>/images/*</url-pattern>
+            <url-pattern>/fonts/*</url-pattern>
+        </web-resource-collection>
+    </security-constraint>
 
-<!-- Auth Servlet -->
-<servlet>
-    <servlet-name>AuthServlet</servlet-name>
-    <servlet-class>controller.AuthServlet</servlet-class>
-</servlet>
-<servlet-mapping>
-    <servlet-name>AuthServlet</servlet-name>
-    <url-pattern>/auth</url-pattern>
-</servlet-mapping>
+    <!-- Static Resource Configuration -->
+    <servlet-mapping>
+        <servlet-name>default</servlet-name>
+        <url-pattern>/css/*</url-pattern>
+        <url-pattern>/js/*</url-pattern>
+        <url-pattern>/images/*</url-pattern>
+        <url-pattern>/fonts/*</url-pattern>
+    </servlet-mapping>
 </web-app>

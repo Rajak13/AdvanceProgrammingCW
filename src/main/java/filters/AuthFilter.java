@@ -19,6 +19,8 @@ import model.User;
 
 @WebFilter("/*")
 public class AuthFilter implements Filter {
+    private UserDAO userDAO;
+
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
         HttpServletRequest req = (HttpServletRequest) request;
@@ -31,10 +33,11 @@ public class AuthFilter implements Filter {
         boolean isLoggedIn = session != null && session.getAttribute("user") != null;
         boolean isAuthResource = uri.contains("/css/") || uri.contains("/js/") || uri.contains("/images/");
         boolean isAuthPage = uri.equals(contextPath + "/auth") ||
-                uri.equals(contextPath + "/login") ||
-                uri.equals(contextPath + "/register");
+                uri.equals(contextPath + "/auth/login") ||
+                uri.equals(contextPath + "/auth/register");
         boolean isHomePage = uri.equals(contextPath + "/") ||
                 uri.equals(contextPath + "/views/pages/home.jsp");
+        boolean isAdminPage = uri.contains("/views/admin/");
 
         // Check for "Remember Me" cookie if not logged in
         if (!isLoggedIn && !isAuthResource) {
@@ -44,43 +47,45 @@ public class AuthFilter implements Filter {
                     if ("rememberedUser".equals(cookie.getName())) {
                         String username = cookie.getValue();
                         try {
-                            UserDAO userDAO = new UserDAO();
                             User user = userDAO.getUserByUsername(username);
                             if (user != null) {
-                                // Auto-login the user
                                 session = req.getSession(true);
                                 session.setAttribute("user", user);
                                 isLoggedIn = true;
-                                break;
                             }
                         } catch (SQLException e) {
-                            // Log the error but continue without auto-login
-                            System.err.println("Error during cookie authentication: " + e.getMessage());
+                            e.printStackTrace();
                         }
                     }
                 }
             }
         }
 
-        if (isAuthResource) {
-            // Always allow CSS, JS, and image resources
+        // Allow access to auth pages and home page for non-logged-in users
+        if (!isLoggedIn && (isAuthPage || isHomePage || isAuthResource)) {
             chain.doFilter(request, response);
-        } else if (isLoggedIn) {
-            // If user is logged in, allow access to all pages
-            chain.doFilter(request, response);
-        } else if (isAuthPage) {
-            // If user is not logged in and trying to access auth pages, allow it
-            chain.doFilter(request, response);
-        } else if (isHomePage) {
-            // If user is not logged in and trying to access home page, redirect to auth
-            res.sendRedirect(contextPath + "/auth");
-        } else {
-            // For all other pages, when not logged in, redirect to auth
-            res.sendRedirect(contextPath + "/auth");
+            return;
         }
+
+        // Redirect to login if not logged in
+        if (!isLoggedIn) {
+            res.sendRedirect(contextPath + "/auth");
+            return;
+        }
+
+        // Check admin access
+        User user = (User) session.getAttribute("user");
+        if (isAdminPage && !user.isAdmin()) {
+            res.sendRedirect(contextPath + "/views/pages/home.jsp");
+            return;
+        }
+
+        chain.doFilter(request, response);
     }
 
+    @Override
     public void init(FilterConfig filterConfig) throws ServletException {
+        userDAO = new UserDAO();
     }
 
     public void destroy() {

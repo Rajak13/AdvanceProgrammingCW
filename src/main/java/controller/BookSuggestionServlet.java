@@ -60,7 +60,7 @@ public class BookSuggestionServlet extends HttpServlet {
 
             // Save suggestion to database
             SuggestionDAO suggestionDAO = new SuggestionDAO();
-            boolean success = suggestionDAO.createSuggestion(suggestion, email);
+            boolean success = suggestionDAO.createSuggestion(suggestion);
 
             if (success) {
                 request.setAttribute("successMessage",

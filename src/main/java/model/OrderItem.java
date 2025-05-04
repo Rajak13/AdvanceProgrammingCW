@@ -1,48 +1,32 @@
 package model;
 
-/**
- * Model class representing an Order Item in the bookstore system.
- */
 public class OrderItem {
-    private int id;
+    private int orderItemId;
     private int orderId;
-    private int bookId;
-    private Book book; // Associated book object
     private int quantity;
-    private double pricePerUnit;
+    private double price;
+    private int bookId;
+    private String bookName;
+    private String picture;
 
-    // Default constructor
     public OrderItem() {
     }
 
-    // Constructor with parameters
-    public OrderItem(int id, int orderId, int bookId, int quantity, double pricePerUnit) {
-        this.id = id;
+    public OrderItem(int orderItemId, int orderId, int quantity, double price, int bookId) {
+        this.orderItemId = orderItemId;
         this.orderId = orderId;
+        this.quantity = quantity;
+        this.price = price;
         this.bookId = bookId;
-        this.quantity = quantity;
-        this.pricePerUnit = pricePerUnit;
     }
 
-    // Constructor with book object
-    public OrderItem(int id, int orderId, Book book, int quantity, double pricePerUnit) {
-        this.id = id;
-        this.orderId = orderId;
-        this.book = book;
-        if (book != null) {
-            this.bookId = book.getBookId();
-        }
-        this.quantity = quantity;
-        this.pricePerUnit = pricePerUnit;
+    // Getters and setters for database fields
+    public int getOrderItemId() {
+        return orderItemId;
     }
 
-    // Getters and Setters
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
+    public void setOrderItemId(int orderItemId) {
+        this.orderItemId = orderItemId;
     }
 
     public int getOrderId() {
@@ -53,25 +37,6 @@ public class OrderItem {
         this.orderId = orderId;
     }
 
-    public int getBookId() {
-        return bookId;
-    }
-
-    public void setBookId(int bookId) {
-        this.bookId = bookId;
-    }
-
-    public Book getBook() {
-        return book;
-    }
-
-    public void setBook(Book book) {
-        this.book = book;
-        if (book != null) {
-            this.bookId = book.getBookId();
-        }
-    }
-
     public int getQuantity() {
         return quantity;
     }
@@ -80,27 +45,46 @@ public class OrderItem {
         this.quantity = quantity;
     }
 
-    public double getPricePerUnit() {
-        return pricePerUnit;
+    public double getPrice() {
+        return price;
     }
 
-    public void setPricePerUnit(double pricePerUnit) {
-        this.pricePerUnit = pricePerUnit;
+    public void setPrice(double price) {
+        this.price = price;
+    }
+
+    public int getBookId() {
+        return bookId;
+    }
+
+    public void setBookId(int bookId) {
+        this.bookId = bookId;
+    }
+
+    // Additional getters and setters for display purposes
+    public String getBookName() {
+        return bookName;
+    }
+
+    public void setBookName(String bookName) {
+        this.bookName = bookName;
+    }
+
+    public String getPicture() {
+        return picture;
+    }
+
+    public void setPicture(String picture) {
+        this.picture = picture;
     }
 
     public double getSubtotal() {
-        return quantity * pricePerUnit;
+        return price * quantity;
     }
 
     @Override
     public String toString() {
-        return "OrderItem{" +
-                "id=" + id +
-                ", orderId=" + orderId +
-                ", bookId=" + bookId +
-                ", quantity=" + quantity +
-                ", pricePerUnit=" + pricePerUnit +
-                ", subtotal=" + getSubtotal() +
-                '}';
+        return "OrderItem [orderItemId=" + orderItemId + ", orderId=" + orderId + ", quantity=" + quantity + ", price="
+                + price + ", bookId=" + bookId + ", bookName=" + bookName + ", picture=" + picture + "]";
     }
 }

@@ -4,7 +4,6 @@ public class Category {
     private int categoryId;
     private String categoryName;
     private String description;
-    private String slug; // URL-friendly version of the category name
 
     // Default constructor
     public Category() {
@@ -13,7 +12,6 @@ public class Category {
     // Constructor with essential fields
     public Category(String categoryName) {
         this.categoryName = categoryName;
-        this.slug = generateSlug(categoryName);
     }
 
     // Full constructor
@@ -21,7 +19,6 @@ public class Category {
         this.categoryId = categoryId;
         this.categoryName = categoryName;
         this.description = description;
-        this.slug = generateSlug(categoryName);
     }
 
     // Getters and setters
@@ -39,7 +36,6 @@ public class Category {
 
     public void setCategoryName(String categoryName) {
         this.categoryName = categoryName;
-        this.slug = generateSlug(categoryName);
     }
 
     public String getDescription() {
@@ -50,29 +46,12 @@ public class Category {
         this.description = description;
     }
 
-    public String getSlug() {
-        return slug;
-    }
-
-    public void setSlug(String slug) {
-        this.slug = slug;
-    }
-
-    // Helper method to generate URL slug from category name
-    private String generateSlug(String name) {
-        if (name == null)
-            return "";
-        return name.toLowerCase()
-                .replaceAll("[^a-z0-9\\s-]", "")
-                .replaceAll("\\s+", "-");
-    }
-
     @Override
     public String toString() {
         return "Category{" +
                 "categoryId=" + categoryId +
                 ", categoryName='" + categoryName + '\'' +
-                ", slug='" + slug + '\'' +
+                ", description='" + description + '\'' +
                 '}';
     }
 }

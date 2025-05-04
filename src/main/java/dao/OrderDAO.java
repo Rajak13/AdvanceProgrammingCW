@@ -5,14 +5,13 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import model.Book;
 import model.Order;
 import model.OrderItem;
-import model.User;
 import utils.DBUtil;
 
 /**
@@ -20,184 +19,95 @@ import utils.DBUtil;
  */
 public class OrderDAO {
 
+    private static final String INSERT_ORDER = "INSERT INTO `order` (Order_date, Status, User_ID) VALUES (?, ?, ?)";
+    private static final String INSERT_ORDER_ITEM = "INSERT INTO order_item (order_id, book_id, quantity, price) VALUES (?, ?, ?, ?)";
+    private static final String SELECT_ORDER_BY_ID = "SELECT * FROM `order` WHERE Order_id = ?";
+    private static final String SELECT_ORDERS_BY_USER = "SELECT * FROM `order` WHERE User_ID = ?";
+    private static final String SELECT_ORDER_ITEMS = "SELECT oi.*, b.Book_name, b.picture FROM order_item oi JOIN book b ON oi.Book_ID = b.Book_ID WHERE oi.Order_id = ?";
+    private static final String UPDATE_ORDER_STATUS = "UPDATE `order` SET Status = ? WHERE Order_id = ?";
+
+    public OrderDAO() {
+    }
+
     /**
      * Create a new order in the database
      */
-    public int createOrder(Order order) throws SQLException {
-        int orderId = 0;
-
+    public boolean createOrder(Order order) {
         try (Connection conn = DBUtil.getConnection()) {
-            // Set auto-commit to false for transaction
             conn.setAutoCommit(false);
 
-            try {
-                // Insert the order
-                String sql = "INSERT INTO `Order` (User_ID, Order_date, Status, shipping_address, payment_method) " +
-                        "VALUES (?, ?, ?, ?, ?)";
+            try (PreparedStatement orderStmt = conn.prepareStatement(INSERT_ORDER, Statement.RETURN_GENERATED_KEYS)) {
+                orderStmt.setTimestamp(1, order.getOrderDate());
+                orderStmt.setString(2, order.getStatus());
+                orderStmt.setInt(3, order.getUserId());
 
-                try (PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-                    pstmt.setInt(1, order.getUserId());
+                int affectedRows = orderStmt.executeUpdate();
+                if (affectedRows == 0) {
+                    conn.rollback();
+                    return false;
+                }
 
-                    // Use current timestamp if not provided
-                    if (order.getOrderDate() == null) {
-                        pstmt.setTimestamp(2, new Timestamp(System.currentTimeMillis()));
+                try (ResultSet generatedKeys = orderStmt.getGeneratedKeys()) {
+                    if (generatedKeys.next()) {
+                        order.setOrderId(generatedKeys.getInt(1));
+                        conn.commit();
+                        return true;
                     } else {
-                        pstmt.setTimestamp(2, order.getOrderDate());
-                    }
-
-                    pstmt.setString(3, order.getStatus());
-                    pstmt.setString(4, order.getShippingAddress());
-                    pstmt.setString(5, order.getPaymentMethod());
-
-                    pstmt.executeUpdate();
-
-                    // Get the generated order ID
-                    try (ResultSet rs = pstmt.getGeneratedKeys()) {
-                        if (rs.next()) {
-                            orderId = rs.getInt(1);
-                            order.setId(orderId);
-
-                            // Insert order items
-                            insertOrderItems(conn, order.getOrderItems(), orderId);
-
-                            // Update total amount (can be calculated or provided)
-                            updateOrderTotal(conn, orderId, order.getTotalAmount());
-                        }
+                        conn.rollback();
+                        return false;
                     }
                 }
-
-                // Commit transaction
-                conn.commit();
-
             } catch (SQLException e) {
-                // Rollback transaction on error
                 conn.rollback();
-                throw e;
-            } finally {
-                // Restore auto-commit
-                conn.setAutoCommit(true);
+                e.printStackTrace();
+                return false;
             }
-        }
-
-        return orderId;
-    }
-
-    /**
-     * Insert order items for an order
-     */
-    private void insertOrderItems(Connection conn, List<OrderItem> items, int orderId) throws SQLException {
-        if (items == null || items.isEmpty()) {
-            return;
-        }
-
-        String sql = "INSERT INTO Order_Item (Order_id, Book_ID, Quantity, Price) VALUES (?, ?, ?, ?)";
-
-        try (PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            for (OrderItem item : items) {
-                pstmt.setInt(1, orderId);
-                pstmt.setInt(2, item.getBookId());
-                pstmt.setInt(3, item.getQuantity());
-                pstmt.setDouble(4, item.getPricePerUnit());
-                pstmt.addBatch();
-
-                item.setOrderId(orderId);
-            }
-
-            pstmt.executeBatch();
-
-            // Get generated IDs
-            try (ResultSet rs = pstmt.getGeneratedKeys()) {
-                int i = 0;
-                while (rs.next() && i < items.size()) {
-                    items.get(i).setId(rs.getInt(1));
-                    i++;
-                }
-            }
-        }
-    }
-
-    /**
-     * Update the total amount for an order
-     */
-    private void updateOrderTotal(Connection conn, int orderId, double totalAmount) throws SQLException {
-        String sql = "UPDATE `Order` SET totalAmount = ? WHERE Order_id = ?";
-
-        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setDouble(1, totalAmount);
-            pstmt.setInt(2, orderId);
-            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
         }
     }
 
     /**
      * Get an order by ID with all details
      */
-    public Order getOrderById(int orderId) throws SQLException {
-        Order order = null;
-
-        // Join with User table to get customer information
-        String sql = "SELECT o.*, u.* FROM `Order` o " +
-                "JOIN User u ON o.User_ID = u.User_ID " +
-                "WHERE o.Order_id = ?";
-
+    public Order getOrderById(int id) throws SQLException {
         try (Connection conn = DBUtil.getConnection();
-                PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setInt(1, orderId);
-
-            try (ResultSet rs = pstmt.executeQuery()) {
+                PreparedStatement stmt = conn.prepareStatement(SELECT_ORDER_BY_ID)) {
+            stmt.setInt(1, id);
+            try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    order = mapResultSetToOrder(rs);
-
-                    // Get order items
-                    order.setOrderItems(getOrderItems(orderId));
+                    Order order = mapResultSetToOrder(rs);
+                    order.setItems(getOrderItems(id));
+                    return order;
                 }
             }
         }
-
-        return order;
+        return null;
     }
 
     /**
      * Get all order items for an order
      */
-    private List<OrderItem> getOrderItems(int orderId) throws SQLException {
+    public List<OrderItem> getOrderItems(int orderId) throws SQLException {
         List<OrderItem> items = new ArrayList<>();
-
-        // Join with Book table to get book information
-        String sql = "SELECT oi.*, b.* FROM Order_Item oi " +
-                "JOIN Book b ON oi.Book_ID = b.Book_ID " +
-                "WHERE oi.Order_id = ?";
-
         try (Connection conn = DBUtil.getConnection();
-                PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setInt(1, orderId);
-
-            try (ResultSet rs = pstmt.executeQuery()) {
+                PreparedStatement stmt = conn.prepareStatement(SELECT_ORDER_ITEMS)) {
+            stmt.setInt(1, orderId);
+            try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     OrderItem item = new OrderItem();
-                    item.setId(rs.getInt("oi.id"));
-                    item.setOrderId(rs.getInt("oi.Order_id"));
-                    item.setBookId(rs.getInt("oi.Book_ID"));
-                    item.setQuantity(rs.getInt("oi.Quantity"));
-                    item.setPricePerUnit(rs.getDouble("oi.Price"));
-
-                    // Set book
-                    Book book = new Book();
-                    book.setBookId(rs.getInt("b.Book_ID"));
-                    book.setBookName(rs.getString("b.Book_name"));
-                    book.setWriterName(rs.getString("b.writer_name"));
-                    book.setPrice(rs.getDouble("b.price"));
-                    book.setPicture(rs.getString("b.picture"));
-
-                    item.setBook(book);
-
+                    item.setOrderItemId(rs.getInt("Order_Item_ID"));
+                    item.setOrderId(rs.getInt("Order_id"));
+                    item.setBookId(rs.getInt("Book_ID"));
+                    item.setQuantity(rs.getInt("Quantity"));
+                    item.setPrice(rs.getDouble("Price"));
+                    item.setBookName(rs.getString("Book_name"));
+                    item.setPicture(rs.getString("picture"));
                     items.add(item);
                 }
             }
         }
-
         return items;
     }
 
@@ -209,8 +119,8 @@ public class OrderDAO {
         List<Order> orders = new ArrayList<>();
 
         StringBuilder sql = new StringBuilder(
-                "SELECT o.*, u.* FROM `Order` o " +
-                        "JOIN User u ON o.User_ID = u.User_ID");
+                "SELECT o.*, u.* FROM `order` o " +
+                        "JOIN users u ON o.User_ID = u.id");
 
         List<Object> params = new ArrayList<>();
 
@@ -250,9 +160,7 @@ public class OrderDAO {
                     Order order = mapResultSetToOrder(rs);
 
                     // Get order items count (without fetching details)
-                    int itemCount = getOrderItemCount(order.getId());
-                    order.setOrderItems(new ArrayList<>()); // Empty list with correct size
-
+                    int itemCount = getOrderItemCount(order.getOrderId());
                     orders.add(order);
                 }
             }
@@ -265,7 +173,7 @@ public class OrderDAO {
      * Get the count of items in an order
      */
     private int getOrderItemCount(int orderId) throws SQLException {
-        String sql = "SELECT SUM(Quantity) FROM Order_Item WHERE Order_id = ?";
+        String sql = "SELECT SUM(quantity) FROM order_item WHERE order_id = ?";
 
         try (Connection conn = DBUtil.getConnection();
                 PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -287,7 +195,7 @@ public class OrderDAO {
      */
     public int countOrders(String searchTerm, String statusFilter) throws SQLException {
         StringBuilder sql = new StringBuilder(
-                "SELECT COUNT(*) FROM `Order` o JOIN User u ON o.User_ID = u.User_ID");
+                "SELECT COUNT(*) FROM `order` o JOIN users u ON o.User_ID = u.id");
 
         List<Object> params = new ArrayList<>();
 
@@ -330,51 +238,31 @@ public class OrderDAO {
     /**
      * Update order status
      */
-    public boolean updateOrderStatus(int orderId, String status, String trackingNumber, String notes)
-            throws SQLException {
-        String sql = "UPDATE `Order` SET Status = ?, tracking_number = ?, notes = ?, updated_at = NOW() WHERE Order_id = ?";
-
+    public boolean updateOrderStatus(int orderId, String status) throws SQLException {
         try (Connection conn = DBUtil.getConnection();
-                PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setString(1, status);
-            pstmt.setString(2, trackingNumber);
-            pstmt.setString(3, notes);
-            pstmt.setInt(4, orderId);
-
-            int updated = pstmt.executeUpdate();
-            return updated > 0;
+                PreparedStatement stmt = conn.prepareStatement(UPDATE_ORDER_STATUS)) {
+            stmt.setString(1, status);
+            stmt.setInt(2, orderId);
+            return stmt.executeUpdate() > 0;
         }
     }
 
     /**
      * Get orders for a specific user
      */
-    public List<Order> getOrdersByUserId(int userId) throws SQLException {
+    public List<Order> getOrdersByUser(int userId) throws SQLException {
         List<Order> orders = new ArrayList<>();
-
-        String sql = "SELECT o.*, u.* FROM `Order` o " +
-                "JOIN User u ON o.User_ID = u.User_ID " +
-                "WHERE o.User_ID = ? " +
-                "ORDER BY o.Order_date DESC";
-
         try (Connection conn = DBUtil.getConnection();
-                PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setInt(1, userId);
-
-            try (ResultSet rs = pstmt.executeQuery()) {
+                PreparedStatement stmt = conn.prepareStatement(SELECT_ORDERS_BY_USER)) {
+            stmt.setInt(1, userId);
+            try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     Order order = mapResultSetToOrder(rs);
-
-                    // Get order items (we'll load items for user orders)
-                    order.setOrderItems(getOrderItems(order.getId()));
-
+                    order.setItems(getOrderItems(order.getOrderId()));
                     orders.add(order);
                 }
             }
         }
-
         return orders;
     }
 
@@ -383,26 +271,122 @@ public class OrderDAO {
      */
     private Order mapResultSetToOrder(ResultSet rs) throws SQLException {
         Order order = new Order();
-        order.setId(rs.getInt("o.Order_id"));
-        order.setUserId(rs.getInt("o.User_ID"));
-        order.setTotalAmount(rs.getDouble("o.totalAmount"));
-        order.setStatus(rs.getString("o.Status"));
-        order.setShippingAddress(rs.getString("o.shipping_address"));
-        order.setPaymentMethod(rs.getString("o.payment_method"));
-        order.setOrderDate(rs.getTimestamp("o.Order_date"));
-        order.setUpdatedAt(rs.getTimestamp("o.updated_at"));
-
-        // Set user
-        User user = new User();
-        user.setUserId(rs.getInt("u.User_ID"));
-        user.setName(rs.getString("u.name"));
-        user.setEmail(rs.getString("u.email"));
-        user.setContact(rs.getString("u.contact"));
-        user.setAddress(rs.getString("u.address"));
-        user.setPicture(rs.getString("u.picture"));
-
-        order.setUser(user);
-
+        order.setOrderId(rs.getInt("Order_id"));
+        order.setOrderDate(rs.getTimestamp("Order_date"));
+        order.setStatus(rs.getString("Status"));
+        order.setUserId(rs.getInt("User_ID"));
         return order;
+    }
+
+    public int getTotalOrders() {
+        String query = "SELECT COUNT(*) FROM `order`";
+        try (Connection conn = DBUtil.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(query);
+                ResultSet rs = stmt.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    public double getTotalRevenue() {
+        String query = "SELECT SUM(total_amount) FROM `order` WHERE Status = 'completed'";
+        try (Connection conn = DBUtil.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(query);
+                ResultSet rs = stmt.executeQuery()) {
+            if (rs.next()) {
+                return rs.getDouble(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0.0;
+    }
+
+    /**
+     * Get all orders with pagination
+     */
+    public List<Map<String, Object>> getAllOrders(int offset, int limit) {
+        List<Map<String, Object>> orders = new ArrayList<>();
+        String query = "SELECT o.*, u.name as customer_name, u.email as customer_email " +
+                "FROM `order` o " +
+                "JOIN User u ON o.User_ID = u.User_ID " +
+                "ORDER BY o.Order_date DESC LIMIT ? OFFSET ?";
+        try (Connection conn = DBUtil.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setInt(1, limit);
+            stmt.setInt(2, offset);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Map<String, Object> order = new HashMap<>();
+                    order.put("id", rs.getInt("Order_id"));
+                    order.put("customerName", rs.getString("customer_name"));
+                    order.put("customerEmail", rs.getString("customer_email"));
+                    order.put("totalAmount", rs.getDouble("total_amount"));
+                    order.put("status", rs.getString("Status"));
+                    order.put("orderDate", rs.getTimestamp("Order_date"));
+                    orders.add(order);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return orders;
+    }
+
+    public int getNoOfRecords() {
+        String query = "SELECT COUNT(*) FROM `order`";
+        try (Connection conn = DBUtil.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(query);
+                ResultSet rs = stmt.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    public Map<String, Object> getOrderDetails(int orderId) {
+        String query = "SELECT o.*, u.name as customer_name, u.email as customer_email, " +
+                "u.address as customer_address, u.contact as customer_contact " +
+                "FROM `order` o " +
+                "JOIN User u ON o.User_ID = u.User_ID " +
+                "WHERE o.Order_id = ?";
+        try (Connection conn = DBUtil.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setInt(1, orderId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    Map<String, Object> order = new HashMap<>();
+                    order.put("id", rs.getInt("Order_id"));
+                    order.put("customerName", rs.getString("customer_name"));
+                    order.put("customerEmail", rs.getString("customer_email"));
+                    order.put("customerAddress", rs.getString("customer_address"));
+                    order.put("customerContact", rs.getString("customer_contact"));
+                    order.put("totalAmount", rs.getDouble("total_amount"));
+                    order.put("status", rs.getString("Status"));
+                    order.put("orderDate", rs.getTimestamp("Order_date"));
+                    return order;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private OrderItem mapResultSetToOrderItem(ResultSet rs) throws SQLException {
+        OrderItem item = new OrderItem();
+        item.setOrderItemId(rs.getInt("Order_Item_ID"));
+        item.setOrderId(rs.getInt("Order_id"));
+        item.setBookId(rs.getInt("Book_ID"));
+        item.setQuantity(rs.getInt("Quantity"));
+        item.setPrice(rs.getDouble("Price"));
+        return item;
     }
 }

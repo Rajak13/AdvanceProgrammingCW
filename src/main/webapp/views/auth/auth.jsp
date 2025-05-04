@@ -6,15 +6,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login & Register - Panna BookStore</title>
-    <link rel="stylesheet" href="<%=request.getContextPath()%>/css/auth.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/auth.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:400,600,700,800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
     
-    <div class="container" id="container">
+    <div class="container" id="container" ${param.activePanel == 'register' ? 'class="right-panel-active"' : ''}>
         <div class="form-container sign-up-container">
-            <form action="<%=request.getContextPath()%>/register" method="post">
+            <form action="<%=request.getContextPath()%>/auth/register" method="post">
                 <h1>Create Account</h1>
                 
                 <c:if test="${not empty errorMessage}">
@@ -31,23 +31,55 @@
                     </div>
                 </c:if>
                 
-                <input type="text" name="username" placeholder="Username" required />
-                <input type="email" name="email" placeholder="Email" required />
-                <input type="tel" name="contact" placeholder="Phone Number" />
-                <input type="text" name="address" placeholder="Address" />
-                <input type="password" name="password" placeholder="Password" required />
-                <input type="password" name="confirmPassword" placeholder="Confirm Password" required />
+                <div class="form-group">
+                    <div class="input-group">
+                        <i class="fas fa-user input-icon"></i>
+                        <input type="text" name="name" placeholder="Name" required />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="input-group">
+                        <i class="fas fa-envelope input-icon"></i>
+                        <input type="email" name="email" placeholder="Email" required />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="input-group">
+                        <i class="fas fa-phone input-icon"></i>
+                        <input type="tel" name="contact" placeholder="Phone Number" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="input-group">
+                        <i class="fas fa-map-marker-alt input-icon"></i>
+                        <input type="text" name="address" placeholder="Address" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="input-group">
+                        <i class="fas fa-lock input-icon"></i>
+                        <input type="password" name="password" placeholder="Password" required />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="input-group">
+                        <i class="fas fa-lock input-icon"></i>
+                        <input type="password" name="confirmPassword" placeholder="Confirm Password" required />
+                    </div>
+                </div>
                 
                 <div class="checkbox-container">
                     <input type="checkbox" id="terms" name="terms" required />
                     <label for="terms">I agree to all Terms & Conditions</label>
                 </div>
                 
-                <button type="submit">Sign Up</button>
+                <button type="submit">
+                    <i class="fas fa-user-plus"></i> Sign Up
+                </button>
             </form>
         </div>
         <div class="form-container sign-in-container">
-            <form action="<%=request.getContextPath()%>/login" method="post">
+            <form action="<%=request.getContextPath()%>/auth/login" method="post">
                 <h1>Sign In</h1>
                 
                 <c:if test="${not empty errorMessage}">
@@ -64,16 +96,30 @@
                     </div>
                 </c:if>
                 
-                <input type="text" name="username" placeholder="Username" required />
-                <input type="password" name="password" placeholder="Password" required />
+                <div class="form-group">
+                    <div class="input-group">
+                        <i class="fas fa-user input-icon"></i>
+                        <input type="text" name="username" placeholder="Username" required />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="input-group">
+                        <i class="fas fa-lock input-icon"></i>
+                        <input type="password" name="password" placeholder="Password" required />
+                    </div>
+                </div>
                 
                 <div class="checkbox-container">
                     <input type="checkbox" id="remember" name="remember" />
                     <label for="remember">Remember me</label>
                 </div>
                 
-                <a href="<%=request.getContextPath()%>/forgotPassword">Forgot your password?</a>
-                <button type="submit">Sign In</button>
+                <a href="<%=request.getContextPath()%>/forgotPassword">
+                    <i class="fas fa-key"></i> Forgot your password?
+                </a>
+                <button type="submit">
+                    <i class="fas fa-sign-in-alt"></i> Sign In
+                </button>
             </form>
         </div>
         <div class="overlay-container">
@@ -81,12 +127,16 @@
                 <div class="overlay-panel overlay-left">
                     <h1>Welcome Back!</h1>
                     <p>To keep connected with us please login with your personal info</p>
-                    <button class="ghost" id="signIn">Sign In</button>
+                    <button class="ghost" id="signIn">
+                        <i class="fas fa-sign-in-alt"></i> Sign In
+                    </button>
                 </div>
                 <div class="overlay-panel overlay-right">
                     <h1>Hello, Book Lover!</h1>
                     <p>Enter your personal details and start your reading journey with us</p>
-                    <button class="ghost" id="signUp">Sign Up</button>
+                    <button class="ghost" id="signUp">
+                        <i class="fas fa-user-plus"></i> Sign Up
+                    </button>
                 </div>
             </div>
         </div>
@@ -96,6 +146,12 @@
         const signUpButton = document.getElementById('signUp');
         const signInButton = document.getElementById('signIn');
         const container = document.getElementById('container');
+        
+        // Check if we should show register panel by default
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('panel') === 'register') {
+            container.classList.add('right-panel-active');
+        }
         
         signUpButton.addEventListener('click', () => {
             container.classList.add('right-panel-active');
@@ -130,12 +186,12 @@
         // Mobile toggle for sign in/sign up
         function setupMobileToggles() {
             const mobileSignUpButton = document.createElement('button');
-            mobileSignUpButton.innerText = 'Don\'t have an account? Sign Up';
+            mobileSignUpButton.innerHTML = '<i class="fas fa-user-plus"></i> Don\'t have an account? Sign Up';
             mobileSignUpButton.classList.add('mobile-toggle');
             mobileSignUpButton.type = 'button';
             
             const mobileSignInButton = document.createElement('button');
-            mobileSignInButton.innerText = 'Already have an account? Sign In';
+            mobileSignInButton.innerHTML = '<i class="fas fa-sign-in-alt"></i> Already have an account? Sign In';
             mobileSignInButton.classList.add('mobile-toggle');
             mobileSignInButton.type = 'button';
             

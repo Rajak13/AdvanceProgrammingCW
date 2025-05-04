@@ -1,6 +1,6 @@
 package model;
 
-import java.util.Date;
+import java.sql.Timestamp;
 
 public class SuggestionBook {
     private int suggestionId;
@@ -8,25 +8,14 @@ public class SuggestionBook {
     private String category;
     private String writer;
     private String description;
-    private Date date;
-    private Integer userId; // Can be null if suggestion from non-registered user
+    private Timestamp date;
+    private int userId;
 
-    // Default constructor
     public SuggestionBook() {
-        this.date = new Date();
     }
 
-    // Constructor with essential fields
-    public SuggestionBook(String suggestedBook, String category, String writer) {
-        this.suggestedBook = suggestedBook;
-        this.category = category;
-        this.writer = writer;
-        this.date = new Date();
-    }
-
-    // Full constructor
-    public SuggestionBook(int suggestionId, String suggestedBook, String category, String writer,
-            String description, Date date, Integer userId) {
+    public SuggestionBook(int suggestionId, String suggestedBook, String category, String writer, String description,
+            Timestamp date, int userId) {
         this.suggestionId = suggestionId;
         this.suggestedBook = suggestedBook;
         this.category = category;
@@ -36,7 +25,6 @@ public class SuggestionBook {
         this.userId = userId;
     }
 
-    // Getters and setters
     public int getSuggestionId() {
         return suggestionId;
     }
@@ -77,30 +65,26 @@ public class SuggestionBook {
         this.description = description;
     }
 
-    public Date getDate() {
+    public Timestamp getDate() {
         return date;
     }
 
-    public void setDate(Date date) {
+    public void setDate(Timestamp date) {
         this.date = date;
     }
 
-    public Integer getUserId() {
+    public int getUserId() {
         return userId;
     }
 
-    public void setUserId(Integer userId) {
+    public void setUserId(int userId) {
         this.userId = userId;
     }
 
     @Override
     public String toString() {
-        return "SuggestionBook{" +
-                "suggestionId=" + suggestionId +
-                ", suggestedBook='" + suggestedBook + '\'' +
-                ", category='" + category + '\'' +
-                ", writer='" + writer + '\'' +
-                ", date=" + date +
-                '}';
+        return "SuggestionBook [suggestionId=" + suggestionId + ", suggestedBook=" + suggestedBook + ", category="
+                + category + ", writer=" + writer + ", description=" + description + ", date=" + date + ", userId="
+                + userId + "]";
     }
 }

@@ -1,33 +1,38 @@
 package model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Book {
     private int bookId;
     private String bookName;
     private double price;
     private String writerName;
     private String picture;
+    private String status; // New, Deal, Bestseller
+    private int stock;
+    private String description;
+    private List<Category> categories;
 
-    // Default constructor
+    // Constructor
     public Book() {
+        this.categories = new ArrayList<>();
     }
 
-    // Constructor with essential fields
-    public Book(String bookName, double price, String writerName) {
-        this.bookName = bookName;
-        this.price = price;
-        this.writerName = writerName;
-    }
-
-    // Full constructor
-    public Book(int bookId, String bookName, double price, String writerName, String picture) {
+    public Book(int bookId, String bookName, double price, String writerName, String picture,
+            String status, int stock, String description) {
         this.bookId = bookId;
         this.bookName = bookName;
         this.price = price;
         this.writerName = writerName;
         this.picture = picture;
+        this.status = status;
+        this.stock = stock;
+        this.description = description;
+        this.categories = new ArrayList<>();
     }
 
-    // Getters and setters
+    // Getters and Setters
     public int getBookId() {
         return bookId;
     }
@@ -68,6 +73,42 @@ public class Book {
         this.picture = picture;
     }
 
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public int getStock() {
+        return stock;
+    }
+
+    public void setStock(int stock) {
+        this.stock = stock;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public List<Category> getCategories() {
+        return categories;
+    }
+
+    public void setCategories(List<Category> categories) {
+        this.categories = categories;
+    }
+
+    public void addCategory(Category category) {
+        this.categories.add(category);
+    }
+
     @Override
     public String toString() {
         return "Book{" +
@@ -75,11 +116,11 @@ public class Book {
                 ", bookName='" + bookName + '\'' +
                 ", price=" + price +
                 ", writerName='" + writerName + '\'' +
+                ", picture='" + picture + '\'' +
+                ", status='" + status + '\'' +
+                ", stock=" + stock +
+                ", description='" + description + '\'' +
+                ", categories=" + categories +
                 '}';
     }
-
-	public void setUserId(int i) {
-		// TODO Auto-generated method stub
-		
-	}
 }

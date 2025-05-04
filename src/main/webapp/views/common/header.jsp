@@ -1,6 +1,8 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="model.User" %>
-<!-- Header -->
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+
 <header class="site-header">
     <div class="header-top">
         <div class="container">
@@ -36,42 +38,57 @@
                     </a>
                 </div>
                 <div class="user-account">
-                    <div class="account-trigger">
-                        <% if (session != null && session.getAttribute("user") != null) { 
-                            model.User user = (model.User) session.getAttribute("user");
-                            String username = user.getUsername();
-                            String firstLetter = username.substring(0, 1).toUpperCase();
-                        %>
-                        <div class="user-avatar"><%= firstLetter %></div>
-                        <span class="username"><%= username %></span>
-                        <% } else { %>
-                        <i class="fas fa-user-circle"></i>
-                        <span>Account</span>
-                        <% } %>
-                        <i class="fas fa-chevron-down"></i>
-                    </div>
-                    <div class="account-dropdown">
-                        <% if (session != null && session.getAttribute("user") != null) { 
-                            model.User user = (model.User) session.getAttribute("user");
-                            String email = user.getEmail() != null ? user.getEmail() : "No email provided";
-                        %>
-                        <div class="user-info">
-                            <div class="user-avatar large"><%= user.getUsername().substring(0, 1).toUpperCase() %></div>
-                            <div class="user-details">
-                                <h4><%= user.getUsername() %></h4>
-                                <p><%= email %></p>
+                    <c:choose>
+                        <c:when test="${not empty sessionScope.user}">
+                            <c:set var="user" value="${sessionScope.user}" />
+                            <c:set var="username" value="${user.name}" />
+                            <c:set var="firstLetter" value="${fn:substring(username, 0, 1)}" />
+                            <div class="account-trigger">
+                                <div class="user-avatar">
+                                    <c:choose>
+                                        <c:when test="${not empty user.picture}">
+                                            <img src="${pageContext.request.contextPath}/${user.picture}" alt="Profile Picture">
+                                        </c:when>
+                                        <c:otherwise>
+                                            ${fn:toUpperCase(firstLetter)}
+                                        </c:otherwise>
+                                    </c:choose>
+                                </div>
+                                <span class="username">${username}</span>
+                                <i class="fas fa-chevron-down"></i>
                             </div>
-                        </div>
-                        <% } %>
-                        <ul>
-                            <li><a href="${pageContext.request.contextPath}/profile"><i class="fas fa-user"></i> My Profile</a></li>
-                            <li><a href="${pageContext.request.contextPath}/orders"><i class="fas fa-shopping-bag"></i> My Orders</a></li>
-                            <li><a href="${pageContext.request.contextPath}/wishlist"><i class="fas fa-heart"></i> Wishlist</a></li>
-                            <li><a href="${pageContext.request.contextPath}/settings"><i class="fas fa-cog"></i> Settings</a></li>
-                            <li class="divider"></li>
-                            <li><a href="${pageContext.request.contextPath}/logout"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
-                        </ul>
-                    </div>
+                            <div class="account-dropdown">
+                                <div class="user-info">
+                                    <div class="user-avatar large">
+                                        <c:choose>
+                                            <c:when test="${not empty user.picture}">
+                                                <img src="${pageContext.request.contextPath}/${user.picture}" alt="Profile Picture">
+                                            </c:when>
+                                            <c:otherwise>
+                                                ${fn:toUpperCase(firstLetter)}
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </div>
+                                    <div class="user-details">
+                                        <h4>${user.name}</h4>
+                                        <p>${user.email}</p>
+                                    </div>
+                                </div>
+                                <ul>
+                                    <li><a href="${pageContext.request.contextPath}/profile"><i class="fas fa-user"></i> My Profile</a></li>
+                                    <li><a href="${pageContext.request.contextPath}/orders"><i class="fas fa-shopping-bag"></i> My Orders</a></li>
+                                    <li><a href="${pageContext.request.contextPath}/wishlist"><i class="fas fa-heart"></i> Wishlist</a></li>
+                                    <li><a href="${pageContext.request.contextPath}/auth/logout"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                                </ul>
+                            </div>
+                        </c:when>
+                        <c:otherwise>
+                            <div class="auth-buttons">
+                                <a href="${pageContext.request.contextPath}/auth/login" class="btn btn-login">Login</a>
+                                <a href="${pageContext.request.contextPath}/auth/register" class="btn btn-register">Register</a>
+                            </div>
+                        </c:otherwise>
+                    </c:choose>
                 </div>
                 <div class="mobile-menu-toggle">
                     <i class="fas fa-bars"></i>
@@ -120,17 +137,27 @@
         </form>
     </div>
     <ul class="mobile-nav-menu">
-        <% if (session != null && session.getAttribute("user") != null) { 
-            model.User user = (model.User) session.getAttribute("user");
-        %>
-        <li class="mobile-user-info">
-            <div class="user-avatar"><%= user.getUsername().substring(0, 1).toUpperCase() %></div>
-            <div class="user-details">
-                <h4><%= user.getUsername() %></h4>
-                <p><%= user.getEmail() %></p>
-            </div>
-        </li>
-        <% } %>
+        <c:choose>
+            <c:when test="${not empty sessionScope.user}">
+                <c:set var="user" value="${sessionScope.user}" />
+                <li class="mobile-user-info">
+                    <div class="user-avatar">
+                        <c:choose>
+                            <c:when test="${not empty user.picture}">
+                                <img src="${pageContext.request.contextPath}/${user.picture}" alt="Profile Picture">
+                            </c:when>
+                            <c:otherwise>
+                                ${fn:toUpperCase(fn:substring(user.name, 0, 1))}
+                            </c:otherwise>
+                        </c:choose>
+                    </div>
+                    <div class="user-details">
+                        <h4>${user.name}</h4>
+                        <p>${user.email}</p>
+                    </div>
+                </li>
+            </c:when>
+        </c:choose>
         <li><a href="${pageContext.request.contextPath}/" ${currentPage eq 'home' ? 'class="active"' : ''}>Home</a></li>
         <li class="has-dropdown">
             <a href="#">Categories <i class="fas fa-chevron-down"></i></a>
@@ -148,14 +175,16 @@
         <li><a href="${pageContext.request.contextPath}/about" ${currentPage eq 'about' ? 'class="active"' : ''}>About Us</a></li>
         <li><a href="${pageContext.request.contextPath}/contact" ${currentPage eq 'contact' ? 'class="active"' : ''}>Contact</a></li>
         <li class="divider"></li>
-        <% if (session != null && session.getAttribute("user") != null) { %>
-        <li><a href="${pageContext.request.contextPath}/profile"><i class="fas fa-user"></i> My Profile</a></li>
-        <li><a href="${pageContext.request.contextPath}/orders"><i class="fas fa-shopping-bag"></i> My Orders</a></li>
-        <li><a href="${pageContext.request.contextPath}/wishlist"><i class="fas fa-heart"></i> Wishlist</a></li>
-        <li><a href="${pageContext.request.contextPath}/settings"><i class="fas fa-cog"></i> Settings</a></li>
-        <li><a href="${pageContext.request.contextPath}/logout"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
-        <% } else { %>
-        <li><a href="${pageContext.request.contextPath}/auth"><i class="fas fa-sign-in-alt"></i> Login</a></li>
-        <% } %>
+        <c:choose>
+            <c:when test="${not empty sessionScope.user}">
+                <li><a href="${pageContext.request.contextPath}/profile"><i class="fas fa-user"></i> My Profile</a></li>
+                <li><a href="${pageContext.request.contextPath}/orders"><i class="fas fa-shopping-bag"></i> My Orders</a></li>
+                <li><a href="${pageContext.request.contextPath}/wishlist"><i class="fas fa-heart"></i> Wishlist</a></li>
+                <li><a href="${pageContext.request.contextPath}/auth/logout"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+            </c:when>
+            <c:otherwise>
+                <li><a href="${pageContext.request.contextPath}/auth/login"><i class="fas fa-sign-in-alt"></i> Login</a></li>
+            </c:otherwise>
+        </c:choose>
     </ul>
 </div>

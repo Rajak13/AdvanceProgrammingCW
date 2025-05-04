@@ -9,9 +9,11 @@ public class User {
     private String password;
     private String picture;
     private String role;
+    private boolean active = true;
 
     // Default constructor
     public User() {
+        this.role = "USER";
     }
 
     // Constructor with essential fields
@@ -19,12 +21,12 @@ public class User {
         this.name = name;
         this.email = email;
         this.password = password;
-        this.role = determineRole(email);
+        this.role = "USER";
     }
 
     // Full constructor
     public User(int userId, String name, String address, String contact, String email, String password,
-            String picture) {
+            String picture, String role) {
         this.userId = userId;
         this.name = name;
         this.address = address;
@@ -32,7 +34,7 @@ public class User {
         this.email = email;
         this.password = password;
         this.picture = picture;
-        this.role = determineRole(email);
+        this.role = role;
     }
 
     // Getters and setters
@@ -74,8 +76,6 @@ public class User {
 
     public void setEmail(String email) {
         this.email = email;
-        // Update role when email changes
-        this.role = determineRole(email);
     }
 
     public String getPassword() {
@@ -102,43 +102,20 @@ public class User {
         this.role = role;
     }
 
-    // Determine role based on email domain
-    private String determineRole(String email) {
-        if (email != null && email.endsWith("@panna.bs.com")) {
-            return "ADMIN";
-        }
-        return "USER";
-    }
-
-    // Check if user is admin
     public boolean isAdmin() {
-        return "ADMIN".equals(this.role);
+        return "ADMIN".equals(role);
     }
 
-    // Helper methods for backwards compatibility with existing code
-    public String getUsername() {
-        return name;
+    public boolean isActive() {
+        return active;
     }
 
-    public void setUsername(String username) {
-        this.name = username;
-    }
-
-    public String getPasswordHash() {
-        return password;
-    }
-
-    public void setPasswordHash(String passwordHash) {
-        this.password = passwordHash;
+    public void setActive(boolean active) {
+        this.active = active;
     }
 
     @Override
     public String toString() {
-        return "User{" +
-                "userId=" + userId +
-                ", name='" + name + '\'' +
-                ", email='" + email + '\'' +
-                ", role='" + role + '\'' +
-                '}';
+        return "User [userId=" + userId + ", name=" + name + ", email=" + email + ", role=" + role + "]";
     }
 }

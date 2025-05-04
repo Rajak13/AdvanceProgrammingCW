@@ -50,11 +50,11 @@
                         <div class="account-trigger">
                             <% if (session != null && session.getAttribute("user") != null) { 
                                 model.User user = (model.User) session.getAttribute("user");
-                                String username = user.getUsername();
-                                String firstLetter = username.substring(0, 1).toUpperCase();
+                                String name = user.getName();
+                                String firstLetter = name.substring(0, 1).toUpperCase();
                             %>
                             <div class="user-avatar"><%= firstLetter %></div>
-                            <span class="username"><%= username %></span>
+                            <span class="username"><%= name %></span>
                             <% } else { %>
                             <i class="fas fa-user-circle"></i>
                             <span>Account</span>
@@ -67,20 +67,25 @@
                                 String email = user.getEmail() != null ? user.getEmail() : "No email provided";
                             %>
                             <div class="user-info">
-                                <div class="user-avatar large"><%= user.getUsername().substring(0, 1).toUpperCase() %></div>
+                                <div class="user-avatar large"><%= user.getName().substring(0, 1).toUpperCase() %></div>
                                 <div class="user-details">
-                                    <h4><%= user.getUsername() %></h4>
+                                    <h4><%= user.getName() %></h4>
                                     <p><%= email %></p>
                                 </div>
                             </div>
                             <% } %>
                             <ul>
-                                <li><a href="${pageContext.request.contextPath}/profile"><i class="fas fa-user"></i> My Profile</a></li>
-                                <li><a href="${pageContext.request.contextPath}/orders"><i class="fas fa-shopping-bag"></i> My Orders</a></li>
-                                <li><a href="${pageContext.request.contextPath}/wishlist"><i class="fas fa-heart"></i> Wishlist</a></li>
-                                <li><a href="${pageContext.request.contextPath}/settings"><i class="fas fa-cog"></i> Settings</a></li>
-                                <li class="divider"></li>
-                                <li><a href="${pageContext.request.contextPath}/logout"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                                <% if (session != null && session.getAttribute("user") != null) { %>
+                                    <li><a href="${pageContext.request.contextPath}/profile"><i class="fas fa-user"></i> My Profile</a></li>
+                                    <li><a href="${pageContext.request.contextPath}/orders"><i class="fas fa-shopping-bag"></i> My Orders</a></li>
+                                    <li><a href="${pageContext.request.contextPath}/wishlist"><i class="fas fa-heart"></i> Wishlist</a></li>
+                                    <li><a href="${pageContext.request.contextPath}/settings"><i class="fas fa-cog"></i> Settings</a></li>
+                                    <li class="divider"></li>
+                                    <li><a href="${pageContext.request.contextPath}/auth/logout"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                                <% } else { %>
+                                    <li><a href="${pageContext.request.contextPath}/auth/login"><i class="fas fa-sign-in-alt"></i> Login</a></li>
+                                    <li><a href="${pageContext.request.contextPath}/auth/register"><i class="fas fa-user-plus"></i> Register</a></li>
+                                <% } %>
                             </ul>
                         </div>
                     </div>
@@ -135,9 +140,9 @@
                 model.User user = (model.User) session.getAttribute("user");
             %>
             <li class="mobile-user-info">
-                <div class="user-avatar"><%= user.getUsername().substring(0, 1).toUpperCase() %></div>
+                <div class="user-avatar"><%= user.getName().substring(0, 1).toUpperCase() %></div>
                 <div class="user-details">
-                    <h4><%= user.getUsername() %></h4>
+                    <h4><%= user.getName() %></h4>
                     <p><%= user.getEmail() %></p>
                 </div>
             </li>
@@ -158,12 +163,18 @@
             <li><a href="${pageContext.request.contextPath}/deals">Deals & Offers</a></li>
             <li><a href="${pageContext.request.contextPath}/about">About Us</a></li>
             <li><a href="${pageContext.request.contextPath}/contact">Contact</a></li>
-            <li class="divider"></li>
-            <li><a href="${pageContext.request.contextPath}/profile"><i class="fas fa-user"></i> My Profile</a></li>
-            <li><a href="${pageContext.request.contextPath}/orders"><i class="fas fa-shopping-bag"></i> My Orders</a></li>
-            <li><a href="${pageContext.request.contextPath}/wishlist"><i class="fas fa-heart"></i> Wishlist</a></li>
-            <li><a href="${pageContext.request.contextPath}/settings"><i class="fas fa-cog"></i> Settings</a></li>
-            <li><a href="${pageContext.request.contextPath}/logout"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+            <% if (session != null && session.getAttribute("user") != null) { %>
+                <li class="divider"></li>
+                <li><a href="${pageContext.request.contextPath}/profile"><i class="fas fa-user"></i> My Profile</a></li>
+                <li><a href="${pageContext.request.contextPath}/orders"><i class="fas fa-shopping-bag"></i> My Orders</a></li>
+                <li><a href="${pageContext.request.contextPath}/wishlist"><i class="fas fa-heart"></i> Wishlist</a></li>
+                <li><a href="${pageContext.request.contextPath}/settings"><i class="fas fa-cog"></i> Settings</a></li>
+                <li><a href="${pageContext.request.contextPath}/auth/logout"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+            <% } else { %>
+                <li class="divider"></li>
+                <li><a href="${pageContext.request.contextPath}/auth/login"><i class="fas fa-sign-in-alt"></i> Login</a></li>
+                <li><a href="${pageContext.request.contextPath}/auth/register"><i class="fas fa-user-plus"></i> Register</a></li>
+            <% } %>
         </ul>
     </div>
     
