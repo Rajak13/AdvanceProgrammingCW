@@ -1,8 +1,8 @@
 package model;
 
 public class Category {
-    private int categoryId;
-    private String categoryName;
+    private int id;
+    private String name;
     private String description;
 
     // Default constructor
@@ -10,32 +10,33 @@ public class Category {
     }
 
     // Constructor with essential fields
-    public Category(String categoryName) {
-        this.categoryName = categoryName;
+    public Category(int id, String name) {
+        this.id = id;
+        this.name = name;
     }
 
     // Full constructor
-    public Category(int categoryId, String categoryName, String description) {
-        this.categoryId = categoryId;
-        this.categoryName = categoryName;
+    public Category(int id, String name, String description) {
+        this.id = id;
+        this.name = name;
         this.description = description;
     }
 
     // Getters and setters
-    public int getCategoryId() {
-        return categoryId;
+    public int getId() {
+        return id;
     }
 
-    public void setCategoryId(int categoryId) {
-        this.categoryId = categoryId;
+    public void setId(int id) {
+        this.id = id;
     }
 
-    public String getCategoryName() {
-        return categoryName;
+    public String getName() {
+        return name;
     }
 
-    public void setCategoryName(String categoryName) {
-        this.categoryName = categoryName;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getDescription() {
@@ -49,8 +50,8 @@ public class Category {
     @Override
     public String toString() {
         return "Category{" +
-                "categoryId=" + categoryId +
-                ", categoryName='" + categoryName + '\'' +
+                "id=" + id +
+                ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
                 '}';
     }

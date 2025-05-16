@@ -6,15 +6,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login & Register - Panna BookStore</title>
+    <link rel="icon" type="image/x-icon" href="${pageContext.request.contextPath}/images/favicon.ico">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/auth.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
     
-    <div class="container" id="container" ${param.activePanel == 'register' ? 'class="right-panel-active"' : ''}>
+    <div class="container" id="container" class="${activePanel == 'register' ? 'right-panel-active' : ''}">
         <div class="form-container sign-up-container">
-            <form action="<%=request.getContextPath()%>/auth/register" method="post">
+            <form action="${pageContext.request.contextPath}/auth/register" method="post">
                 <h1>Create Account</h1>
                 
                 <c:if test="${not empty errorMessage}">
@@ -34,7 +35,7 @@
                 <div class="form-group">
                     <div class="input-group">
                         <i class="fas fa-user input-icon"></i>
-                        <input type="text" name="name" placeholder="Name" required />
+                        <input type="text" name="name" placeholder="Full Name" required />
                     </div>
                 </div>
                 <div class="form-group">
@@ -79,7 +80,7 @@
             </form>
         </div>
         <div class="form-container sign-in-container">
-            <form action="<%=request.getContextPath()%>/auth/login" method="post">
+            <form action="${pageContext.request.contextPath}/auth/login" method="post">
                 <h1>Sign In</h1>
                 
                 <c:if test="${not empty errorMessage}">
@@ -98,8 +99,8 @@
                 
                 <div class="form-group">
                     <div class="input-group">
-                        <i class="fas fa-user input-icon"></i>
-                        <input type="text" name="username" placeholder="Username" required />
+                        <i class="fas fa-envelope input-icon"></i>
+                        <input type="email" name="email" placeholder="Email" required />
                     </div>
                 </div>
                 <div class="form-group">
@@ -114,7 +115,7 @@
                     <label for="remember">Remember me</label>
                 </div>
                 
-                <a href="<%=request.getContextPath()%>/forgotPassword">
+                <a href="${pageContext.request.contextPath}/forgot-password">
                     <i class="fas fa-key"></i> Forgot your password?
                 </a>
                 <button type="submit">

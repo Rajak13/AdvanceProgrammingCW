@@ -1,26 +1,27 @@
 package model;
 
-public class OrderItem {
+import java.io.Serializable;
+
+public class OrderItem implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     private int orderItemId;
     private int orderId;
+    private int bookId;
     private int quantity;
     private double price;
-    private int bookId;
-    private String bookName;
-    private String picture;
+    private Book book;
 
     public OrderItem() {
     }
 
-    public OrderItem(int orderItemId, int orderId, int quantity, double price, int bookId) {
-        this.orderItemId = orderItemId;
+    public OrderItem(int orderId, int bookId, int quantity, double price) {
         this.orderId = orderId;
+        this.bookId = bookId;
         this.quantity = quantity;
         this.price = price;
-        this.bookId = bookId;
     }
 
-    // Getters and setters for database fields
     public int getOrderItemId() {
         return orderItemId;
     }
@@ -35,6 +36,14 @@ public class OrderItem {
 
     public void setOrderId(int orderId) {
         this.orderId = orderId;
+    }
+
+    public int getBookId() {
+        return bookId;
+    }
+
+    public void setBookId(int bookId) {
+        this.bookId = bookId;
     }
 
     public int getQuantity() {
@@ -53,38 +62,21 @@ public class OrderItem {
         this.price = price;
     }
 
-    public int getBookId() {
-        return bookId;
+    public Book getBook() {
+        return book;
     }
 
-    public void setBookId(int bookId) {
-        this.bookId = bookId;
-    }
-
-    // Additional getters and setters for display purposes
-    public String getBookName() {
-        return bookName;
-    }
-
-    public void setBookName(String bookName) {
-        this.bookName = bookName;
-    }
-
-    public String getPicture() {
-        return picture;
-    }
-
-    public void setPicture(String picture) {
-        this.picture = picture;
+    public void setBook(Book book) {
+        this.book = book;
     }
 
     public double getSubtotal() {
-        return price * quantity;
+        return quantity * price;
     }
 
     @Override
     public String toString() {
-        return "OrderItem [orderItemId=" + orderItemId + ", orderId=" + orderId + ", quantity=" + quantity + ", price="
-                + price + ", bookId=" + bookId + ", bookName=" + bookName + ", picture=" + picture + "]";
+        return "OrderItem [id=" + orderItemId + ", orderId=" + orderId + ", bookId=" + bookId
+                + ", quantity=" + quantity + ", price=" + price + "]";
     }
 }

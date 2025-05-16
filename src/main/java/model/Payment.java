@@ -5,24 +5,13 @@ import java.sql.Timestamp;
 public class Payment {
     private int paymentId;
     private Timestamp date;
-    private String method;
-    private String status;
+    private String method; // Credit Card, Debit Card, PayPal, Cash on Delivery
+    private String status; // Pending, Completed, Failed, Refunded
     private int userId;
     private int orderId;
     private double amount;
 
     public Payment() {
-    }
-
-    public Payment(int paymentId, Timestamp date, String method, String status, int userId, int orderId,
-            double amount) {
-        this.paymentId = paymentId;
-        this.date = date;
-        this.method = method;
-        this.status = status;
-        this.userId = userId;
-        this.orderId = orderId;
-        this.amount = amount;
     }
 
     public int getPaymentId() {

@@ -41,7 +41,7 @@
                 </div>
                 <div class="header-right">
                     <div class="cart-icon">
-                        <a href="${pageContext.request.contextPath}/cart">
+                        <a href="${pageContext.request.contextPath}/cart-page">
                             <i class="fas fa-shopping-cart"></i>
                             <span class="cart-count">0</span>
                         </a>

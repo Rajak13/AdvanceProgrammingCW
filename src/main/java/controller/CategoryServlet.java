@@ -14,72 +14,64 @@ import jakarta.servlet.http.HttpServletResponse;
 import model.Book;
 import model.Category;
 
-@WebServlet("/category/*")
+@WebServlet("/categories/*")
 public class CategoryServlet extends HttpServlet {
-    private static final int ITEMS_PER_PAGE = 12; // Number of books to display per page
+    private static final long serialVersionUID = 1L;
+    private CategoryDAO categoryDAO;
+    private BookDAO bookDAO;
 
     @Override
+    public void init() throws ServletException {
+        try {
+            categoryDAO = new CategoryDAO();
+            bookDAO = new BookDAO();
+        } catch (SQLException e) {
+            throw new ServletException("Error initializing DAOs", e);
+        }
+    }
+
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-
-        String pathInfo = request.getPathInfo();
-        String categorySlug = pathInfo != null ? pathInfo.substring(1) : "";
+        String action = request.getPathInfo();
+        if (action == null) {
+            action = "/list";
+        }
 
         try {
-            CategoryDAO categoryDAO = new CategoryDAO();
-            BookDAO bookDAO = new BookDAO();
-
-            // Get category by slug
-            Category category = categoryDAO.getCategoryBySlug(categorySlug);
-
-            if (category == null) {
-                // If category doesn't exist, redirect to categories list page
-                response.sendRedirect(request.getContextPath() + "/categories");
-                return;
+            switch (action) {
+                case "/list":
+                    listCategories(request, response);
+                    break;
+                case "/view":
+                    viewCategory(request, response);
+                    break;
+                default:
+                    response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                    break;
             }
+        } catch (SQLException e) {
+            throw new ServletException(e);
+        }
+    }
 
-            // Pagination parameters
-            int page = 1;
-            String pageParam = request.getParameter("page");
-            if (pageParam != null && !pageParam.isEmpty()) {
-                try {
-                    page = Integer.parseInt(pageParam);
-                    if (page < 1)
-                        page = 1;
-                } catch (NumberFormatException e) {
-                    // Invalid page number, use default
-                }
-            }
+    private void listCategories(HttpServletRequest request, HttpServletResponse response)
+            throws SQLException, ServletException, IOException {
+        List<Category> categories = categoryDAO.getAllCategories();
+        request.setAttribute("categories", categories);
+        request.getRequestDispatcher("/views/pages/category.jsp").forward(request, response);
+    }
 
-            // Sorting parameters
-            String sortBy = request.getParameter("sort");
-            String priceRange = request.getParameter("price");
-
-            // Get books for this category with pagination and filters
-            List<Book> books = bookDAO.getBooksByCategory(category.getCategoryId(), page, ITEMS_PER_PAGE, sortBy,
-                    priceRange);
-            int totalBooks = bookDAO.countBooksByCategory(category.getCategoryId(), priceRange);
-            int totalPages = (int) Math.ceil((double) totalBooks / ITEMS_PER_PAGE);
-
-            // Get recommended books (could be based on user's history or popular books)
-            List<Book> recommendedBooks = bookDAO.getRecommendedBooks(5); // Limit to 5 books
-
-            // Set attributes for JSP
+    private void viewCategory(HttpServletRequest request, HttpServletResponse response)
+            throws SQLException, ServletException, IOException {
+        int categoryId = Integer.parseInt(request.getParameter("id"));
+        Category category = categoryDAO.getCategoryById(categoryId);
+        if (category != null) {
+            List<Book> books = bookDAO.getBooksByCategory(categoryId);
             request.setAttribute("category", category);
             request.setAttribute("books", books);
-            request.setAttribute("currentPage", page);
-            request.setAttribute("totalPages", totalPages);
-            request.setAttribute("recommendedBooks", recommendedBooks);
-
-            // Forward to category page
-            request.setAttribute("pageTitle", category.getCategoryName() + " Books");
-            request.setAttribute("currentPage", "category");
-            request.setAttribute("mainContent", "/views/pages/category/category.jsp");
-            request.getRequestDispatcher("/views/common/page_template.jsp").forward(request, response);
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Database error occurred");
+            request.getRequestDispatcher("/views/pages/category_view.jsp").forward(request, response);
+        } else {
+            response.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
     }
 }

@@ -1,172 +1,384 @@
-document.addEventListener('DOMContentLoaded', function() {
-    // Sidebar Toggle
-    const sidebarToggle = document.querySelector('.sidebar-toggle');
-    const sidebar = document.querySelector('.admin-sidebar');
-    const mainContent = document.querySelector('.admin-main');
+// Make sure to include these script dependencies in your JSP files:
+// <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
+// <script src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
+// <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
 
-    if (sidebarToggle) {
-        sidebarToggle.addEventListener('click', function() {
-            sidebar.classList.toggle('active');
-            mainContent.classList.toggle('sidebar-collapsed');
-        });
-    }
+var AdminDashboard = {
+    init: function() {
+        this.initializeCharts();
+        this.initializeEventListeners();
+        this.initializeDataTables();
+        this.handleResponsive();
+        this.initializeModals();
+        this.initializeFormSubmissions();
+    },
 
-    // Initialize Chart
-    const salesChart = document.getElementById('salesChart');
-    if (salesChart) {
-        const ctx = salesChart.getContext('2d');
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-                datasets: [{
-                    label: 'Sales',
-                    data: [12, 19, 3, 5, 2, 3],
-                    backgroundColor: 'rgba(255, 87, 34, 0.2)',
-                    borderColor: 'rgba(255, 87, 34, 1)',
-                    borderWidth: 2,
-                    tension: 0.4,
-                    fill: true
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        grid: {
-                            display: true,
-                            color: 'rgba(0, 0, 0, 0.1)'
+    initializeCharts: function() {
+        var self = this;
+        
+        // Revenue Chart
+        var revenueChart = document.getElementById('revenueChart');
+        if (revenueChart && window.Chart) {
+            new Chart(revenueChart.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
+                    datasets: [
+                        {
+                            label: 'Google ads',
+                            data: [65, 210, 180, 150, 100, 30, 120, 30],
+                            borderColor: '#4CAF50',
+                            backgroundColor: 'transparent',
+                            tension: 0.4,
+                            pointRadius: 4,
+                            pointBackgroundColor: '#4CAF50'
                         },
-                        ticks: {
-                            callback: function(value) {
-                                return '$' + value;
+                        {
+                            label: 'Facebook ads',
+                            data: [30, 120, 90, 50, 150, 300, 120, 180],
+                            borderColor: '#FF9800',
+                            backgroundColor: 'transparent',
+                            tension: 0.4,
+                            pointRadius: 4,
+                            pointBackgroundColor: '#FF9800'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            align: 'end',
+                            labels: {
+                                boxWidth: 8,
+                                usePointStyle: true,
+                                pointStyle: 'circle'
                             }
                         }
                     },
-                    x: {
-                        grid: {
-                            display: false
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
                         }
                     }
                 }
+            });
+        }
+
+        // Website Visitors Chart
+        var visitorsChart = document.getElementById('visitorsChart');
+        if (visitorsChart && window.Chart) {
+            new Chart(visitorsChart.getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Direct', 'Organic', 'Paid', 'Social'],
+                    datasets: [{
+                        data: [38, 22, 12, 28],
+                        backgroundColor: ['#FF9800', '#4CAF50', '#03A9F4', '#E91E63'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                boxWidth: 8,
+                                usePointStyle: true,
+                                pointStyle: 'circle'
+                            }
+                        }
+                    },
+                    cutout: '75%'
+                }
+            });
+        }
+
+        // Buyers Profile Chart
+        const buyersChart = document.getElementById('buyersChart');
+        if (buyersChart) {
+            new Chart(buyersChart, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Male', 'Female', 'Others'],
+                    datasets: [{
+                        data: [50, 35, 15],
+                        backgroundColor: ['#FF9800', '#4CAF50', '#03A9F4'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                boxWidth: 8,
+                                usePointStyle: true,
+                                pointStyle: 'circle'
+                            }
+                        }
+                    },
+                    cutout: '75%'
+                }
+            });
+        }
+    },
+
+    initializeEventListeners: function() {
+        var self = this;
+        
+        // Sidebar Toggle
+        var sidebarToggle = document.querySelector('.sidebar-toggle');
+        var sidebar = document.querySelector('.admin-sidebar');
+        var mainContent = document.querySelector('.admin-main');
+        
+        if (sidebarToggle) {
+            sidebarToggle.onclick = function() {
+                if (sidebar) sidebar.classList.toggle('collapsed');
+                if (mainContent) mainContent.classList.toggle('expanded');
+            };
+        }
+
+        // Chart Period Toggle
+        var chartButtons = document.querySelectorAll('.chart-actions button');
+        chartButtons.forEach(function(button) {
+            button.onclick = function() {
+                chartButtons.forEach(function(btn) {
+                    btn.classList.remove('active');
+                });
+                this.classList.add('active');
+                self.updateChartData(this.textContent.toLowerCase());
+            };
+        });
+
+        // Search Functionality
+        var searchInput = document.querySelector('.search-bar input');
+        if (searchInput) {
+            searchInput.onkeyup = self.debounce(function(e) {
+                self.performSearch(e.target.value);
+            }, 300);
+        }
+    },
+
+    initializeModals: function() {
+        // Add New Book/User button click handler
+        var addButtons = document.querySelectorAll('#addBookBtn, #addUserBtn');
+        for (var i = 0; i < addButtons.length; i++) {
+            addButtons[i].onclick = function() {
+                var modalId = this.id === 'addBookBtn' ? 'bookModal' : 'userModal';
+                var modal = document.getElementById(modalId);
+                if (modal) {
+                    modal.style.display = 'block';
+                    modal.classList.add('show');
+                }
+            };
+        }
+
+        // Close button handlers
+        var closeButtons = document.querySelectorAll('.modal-close, .btn-secondary');
+        for (var j = 0; j < closeButtons.length; j++) {
+            closeButtons[j].onclick = function() {
+                var modal = this.closest('.modal');
+                if (modal) {
+                    modal.style.display = 'none';
+                    modal.classList.remove('show');
+                }
+            };
+        }
+
+        // Close on outside click
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = 'none';
+                event.target.classList.remove('show');
             }
-        });
-    }
+        };
+    },
 
-    // Chart Period Toggle
-    const chartButtons = document.querySelectorAll('.chart-actions button');
-    chartButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            chartButtons.forEach(btn => btn.classList.remove('active'));
-            this.classList.add('active');
-            // Here you would typically update the chart data based on the selected period
-            updateChartData(this.textContent.toLowerCase());
-        });
-    });
+    openModal: function(modalId) {
+        var modal = document.getElementById(modalId);
+        if (modal) {
+            modal.style.display = 'block';
+            modal.classList.add('show');
+        }
+    },
 
-    // Date Filter
-    const dateFilter = document.querySelector('.date-filter select');
-    if (dateFilter) {
-        dateFilter.addEventListener('change', function() {
-            // Here you would typically update the dashboard data based on the selected date range
-            updateDashboardData(this.value);
-        });
-    }
+    closeModal: function(modalId) {
+        var modal = document.getElementById(modalId);
+        if (modal) {
+            modal.style.display = 'none';
+            modal.classList.remove('show');
+        }
+    },
 
-    // Search Functionality
-    const searchInput = document.querySelector('.search-bar input');
-    const searchButton = document.querySelector('.search-bar button');
-    
-    if (searchInput && searchButton) {
-        searchButton.addEventListener('click', function(e) {
-            e.preventDefault();
-            performSearch(searchInput.value);
-        });
+    showNotification: function(type, message) {
+        var notification = document.createElement('div');
+        notification.className = 'notification ' + type;
+        notification.textContent = message;
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(function() {
+            notification.classList.add('show');
+        }, 100);
+        
+        setTimeout(function() {
+            notification.classList.remove('show');
+            setTimeout(function() {
+                notification.remove();
+            }, 300);
+        }, 3000);
+    },
 
-        searchInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                performSearch(this.value);
+    initializeDataTables: function() {
+        if (window.jQuery && jQuery.fn.DataTable) {
+            jQuery('.data-table').DataTable({
+                pageLength: 10,
+                responsive: true,
+                dom: '<"table-header"<"table-search"f><"table-length"l>><"table-content"t><"table-footer"<"table-info"i><"table-pagination"p>>',
+                language: {
+                    search: "",
+                    searchPlaceholder: "Search...",
+                    lengthMenu: "Show _MENU_",
+                    info: "Showing _START_ to _END_ of _TOTAL_ entries"
+                }
+            });
+        }
+    },
+
+    handleResponsive: function() {
+        var self = this;
+        
+        function handleResize() {
+            if (window.innerWidth <= 768) {
+                var sidebar = document.querySelector('.admin-sidebar');
+                var mainContent = document.querySelector('.admin-main');
+                
+                if (sidebar) sidebar.classList.add('collapsed');
+                if (mainContent) mainContent.classList.add('expanded');
             }
-        });
-    }
+        }
 
-    function performSearch(query) {
-        // Here you would typically implement the search functionality
-        console.log('Searching for:', query);
-        // You can make an AJAX call to your backend here
-    }
+        window.onresize = handleResize;
+        handleResize();
+    },
 
-    function updateChartData(period) {
-        // Here you would typically fetch new chart data based on the period
+    // Utility Functions
+    debounce: function(func, wait) {
+        var timeout;
+        return function() {
+            var context = this;
+            var args = arguments;
+            clearTimeout(timeout);
+            timeout = setTimeout(function() {
+                func.apply(context, args);
+            }, wait);
+        };
+    },
+
+    updateChartData: function(period) {
+        // Implement chart data update logic based on period
         console.log('Updating chart data for period:', period);
-        // You can make an AJAX call to your backend here
-    }
+    },
 
-    function updateDashboardData(dateRange) {
-        // Here you would typically fetch new dashboard data based on the date range
-        console.log('Updating dashboard data for date range:', dateRange);
-        // You can make an AJAX call to your backend here
-    }
+    performSearch: function(query) {
+        // Implement search functionality
+        console.log('Searching for:', query);
+    },
 
-    // Notifications
-    const notifications = document.querySelector('.notifications');
-    if (notifications) {
-        notifications.addEventListener('click', function() {
-            // Here you would typically show a notifications panel
-            console.log('Notifications clicked');
-            // You can make an AJAX call to fetch notifications here
-        });
-    }
+    initializeFormSubmissions: function() {
+        var self = this;
+        
+        // Book form submission
+        var bookForm = document.getElementById('bookForm');
+        if (bookForm) {
+            bookForm.onsubmit = function(e) {
+                e.preventDefault();
+                var formData = new FormData(this);
+                var bookId = document.getElementById('bookId').value;
+                
+                // Add any missing fields
+                if (!formData.has('status')) {
+                    formData.append('status', 'Active');
+                }
+                
+                fetch(this.action || (bookId ? '/admin/books?action=edit' : '/admin/books?action=add'), {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(function(response) {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(function(data) {
+                    self.showNotification('success', 'Book saved successfully');
+                    self.closeModal('bookModal');
+                    window.location.reload();
+                })
+                .catch(function(error) {
+                    console.error('Error:', error);
+                    self.showNotification('error', 'Error saving book');
+                });
+            };
+        }
 
-    // User Dropdown
-    const userMenu = document.querySelector('.user-menu');
-    if (userMenu) {
-        userMenu.addEventListener('click', function(e) {
-            e.stopPropagation();
-            const dropdown = this.querySelector('.user-dropdown');
-            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
-        });
-
-        // Close dropdown when clicking outside
-        document.addEventListener('click', function() {
-            const dropdown = document.querySelector('.user-dropdown');
-            if (dropdown) {
-                dropdown.style.display = 'none';
-            }
-        });
-    }
-
-    // Responsive Design
-    function handleResponsive() {
-        if (window.innerWidth <= 768) {
-            sidebar.classList.remove('active');
-            mainContent.classList.remove('sidebar-collapsed');
+        // User form submission
+        var userForm = document.getElementById('userForm');
+        if (userForm) {
+            userForm.onsubmit = function(e) {
+                e.preventDefault();
+                var formData = new FormData(this);
+                var userId = document.getElementById('userId').value;
+                
+                // Add any missing fields
+                if (!formData.has('role')) {
+                    formData.append('role', 'USER');
+                }
+                
+                fetch(this.action || '/admin/users', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(function(response) {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(function(data) {
+                    self.showNotification('success', 'User saved successfully');
+                    self.closeModal('userModal');
+                    window.location.reload();
+                })
+                .catch(function(error) {
+                    console.error('Error:', error);
+                    self.showNotification('error', 'Error saving user');
+                });
+            };
         }
     }
+};
 
-    window.addEventListener('resize', handleResponsive);
-    handleResponsive();
+// Initialize when DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+    AdminDashboard.init();
+});
 
-    // Add loading state to buttons
-    const buttons = document.querySelectorAll('.btn');
-    buttons.forEach(button => {
-        button.addEventListener('click', function() {
-            if (this.classList.contains('btn-primary') || 
-                this.classList.contains('btn-secondary') || 
-                this.classList.contains('btn-danger')) {
-                this.classList.add('loading');
-                setTimeout(() => {
-                    this.classList.remove('loading');
-                }, 1000);
-            }
-        });
-    });
-}); 
+// Make AdminDashboard globally accessible
+window.AdminDashboard = AdminDashboard; 

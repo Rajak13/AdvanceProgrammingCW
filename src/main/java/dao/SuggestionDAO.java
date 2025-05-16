@@ -4,7 +4,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,61 +11,92 @@ import model.SuggestionBook;
 import utils.DBUtil;
 
 public class SuggestionDAO {
-    private static final String INSERT_SUGGESTION = "INSERT INTO suggestionbooks (Suggested_book, category, writer, description, date, User_ID) VALUES (?, ?, ?, ?, ?, ?)";
-    private static final String SELECT_ALL_SUGGESTIONS = "SELECT * FROM suggestionbooks ORDER BY date DESC";
-    private static final String SELECT_SUGGESTION_BY_ID = "SELECT * FROM suggestionbooks WHERE Suggestion_ID = ?";
-    private static final String DELETE_SUGGESTION = "DELETE FROM suggestionbooks WHERE Suggestion_ID = ?";
-    private static final String UPDATE_STATUS = "UPDATE suggestionbooks SET status = ? WHERE Suggestion_ID = ?";
+    private static final String GET_SUGGESTION = "SELECT * FROM suggestion WHERE Suggestion_id = ?";
+    private static final String GET_ALL_SUGGESTIONS = "SELECT * FROM suggestion ORDER BY date DESC";
+    private static final String GET_USER_SUGGESTIONS = "SELECT * FROM suggestion WHERE User_id = ? ORDER BY date DESC";
+    private static final String CREATE_SUGGESTION = "INSERT INTO suggestion (User_id, title, author, description, status, date) VALUES (?, ?, ?, ?, ?, NOW())";
+    private static final String UPDATE_SUGGESTION = "UPDATE suggestion SET status = ? WHERE Suggestion_id = ?";
+    private static final String DELETE_SUGGESTION = "DELETE FROM suggestion WHERE Suggestion_id = ?";
 
-    public SuggestionDAO() {
-    }
-
-    public boolean createSuggestion(SuggestionBook suggestion) throws SQLException {
+    public SuggestionBook getSuggestion(int suggestionId) throws SQLException {
         try (Connection conn = DBUtil.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(INSERT_SUGGESTION, Statement.RETURN_GENERATED_KEYS)) {
-            stmt.setString(1, suggestion.getSuggestedBook());
-            stmt.setString(2, suggestion.getCategory());
-            stmt.setString(3, suggestion.getWriter());
-            stmt.setString(4, suggestion.getDescription());
-            stmt.setTimestamp(5, suggestion.getDate());
-            stmt.setInt(6, suggestion.getUserId());
-
-            int affectedRows = stmt.executeUpdate();
-            if (affectedRows > 0) {
-                try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
-                    if (generatedKeys.next()) {
-                        suggestion.setSuggestionId(generatedKeys.getInt(1));
-                        return true;
-                    }
+                PreparedStatement stmt = conn.prepareStatement(GET_SUGGESTION)) {
+            stmt.setInt(1, suggestionId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    SuggestionBook suggestion = new SuggestionBook();
+                    suggestion.setSuggestionId(rs.getInt("Suggestion_id"));
+                    suggestion.setUserId(rs.getInt("User_id"));
+                    suggestion.setTitle(rs.getString("title"));
+                    suggestion.setAuthor(rs.getString("author"));
+                    suggestion.setDescription(rs.getString("description"));
+                    suggestion.setStatus(rs.getString("status"));
+                    return suggestion;
                 }
             }
-            return false;
         }
+        return null;
     }
 
     public List<SuggestionBook> getAllSuggestions() throws SQLException {
         List<SuggestionBook> suggestions = new ArrayList<>();
         try (Connection conn = DBUtil.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(SELECT_ALL_SUGGESTIONS);
+                PreparedStatement stmt = conn.prepareStatement(GET_ALL_SUGGESTIONS);
                 ResultSet rs = stmt.executeQuery()) {
             while (rs.next()) {
-                suggestions.add(mapResultSetToSuggestion(rs));
+                SuggestionBook suggestion = new SuggestionBook();
+                suggestion.setSuggestionId(rs.getInt("Suggestion_id"));
+                suggestion.setUserId(rs.getInt("User_id"));
+                suggestion.setTitle(rs.getString("title"));
+                suggestion.setAuthor(rs.getString("author"));
+                suggestion.setDescription(rs.getString("description"));
+                suggestion.setStatus(rs.getString("status"));
+                suggestions.add(suggestion);
             }
         }
         return suggestions;
     }
 
-    public SuggestionBook getSuggestionById(int suggestionId) throws SQLException {
+    public List<SuggestionBook> getUserSuggestions(int userId) throws SQLException {
+        List<SuggestionBook> suggestions = new ArrayList<>();
         try (Connection conn = DBUtil.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(SELECT_SUGGESTION_BY_ID)) {
-            stmt.setInt(1, suggestionId);
+                PreparedStatement stmt = conn.prepareStatement(GET_USER_SUGGESTIONS)) {
+            stmt.setInt(1, userId);
             try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return mapResultSetToSuggestion(rs);
+                while (rs.next()) {
+                    SuggestionBook suggestion = new SuggestionBook();
+                    suggestion.setSuggestionId(rs.getInt("Suggestion_id"));
+                    suggestion.setUserId(rs.getInt("User_id"));
+                    suggestion.setTitle(rs.getString("title"));
+                    suggestion.setAuthor(rs.getString("author"));
+                    suggestion.setDescription(rs.getString("description"));
+                    suggestion.setStatus(rs.getString("status"));
+                    suggestions.add(suggestion);
                 }
             }
         }
-        return null;
+        return suggestions;
+    }
+
+    public boolean createSuggestion(SuggestionBook suggestion) throws SQLException {
+        try (Connection conn = DBUtil.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(CREATE_SUGGESTION)) {
+            stmt.setInt(1, suggestion.getUserId());
+            stmt.setString(2, suggestion.getTitle());
+            stmt.setString(3, suggestion.getAuthor());
+            stmt.setString(4, suggestion.getDescription());
+            stmt.setString(5, suggestion.getStatus());
+            return stmt.executeUpdate() > 0;
+        }
+    }
+
+    public boolean updateSuggestion(SuggestionBook suggestion) throws SQLException {
+        try (Connection conn = DBUtil.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(UPDATE_SUGGESTION)) {
+            stmt.setString(1, suggestion.getStatus());
+            stmt.setInt(2, suggestion.getSuggestionId());
+            return stmt.executeUpdate() > 0;
+        }
     }
 
     public boolean deleteSuggestion(int suggestionId) throws SQLException {
@@ -75,35 +105,5 @@ public class SuggestionDAO {
             stmt.setInt(1, suggestionId);
             return stmt.executeUpdate() > 0;
         }
-    }
-
-    public boolean approveSuggestion(int suggestionId) throws SQLException {
-        try (Connection conn = DBUtil.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(UPDATE_STATUS)) {
-            stmt.setString(1, "approved");
-            stmt.setInt(2, suggestionId);
-            return stmt.executeUpdate() > 0;
-        }
-    }
-
-    public boolean rejectSuggestion(int suggestionId) throws SQLException {
-        try (Connection conn = DBUtil.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(UPDATE_STATUS)) {
-            stmt.setString(1, "rejected");
-            stmt.setInt(2, suggestionId);
-            return stmt.executeUpdate() > 0;
-        }
-    }
-
-    private SuggestionBook mapResultSetToSuggestion(ResultSet rs) throws SQLException {
-        SuggestionBook suggestion = new SuggestionBook();
-        suggestion.setSuggestionId(rs.getInt("Suggestion_ID"));
-        suggestion.setSuggestedBook(rs.getString("Suggested_book"));
-        suggestion.setCategory(rs.getString("category"));
-        suggestion.setWriter(rs.getString("writer"));
-        suggestion.setDescription(rs.getString("description"));
-        suggestion.setDate(rs.getTimestamp("date"));
-        suggestion.setUserId(rs.getInt("User_ID"));
-        return suggestion;
     }
 }

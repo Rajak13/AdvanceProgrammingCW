@@ -1,38 +1,33 @@
 package model;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.io.Serializable;
 
-public class Book {
+public class Book implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     private int bookId;
     private String bookName;
-    private double price;
     private String writerName;
+    private double price;
     private String picture;
-    private String status; // New, Deal, Bestseller
+    private String status;
     private int stock;
     private String description;
-    private List<Category> categories;
 
-    // Constructor
     public Book() {
-        this.categories = new ArrayList<>();
     }
 
-    public Book(int bookId, String bookName, double price, String writerName, String picture,
-            String status, int stock, String description) {
-        this.bookId = bookId;
+    public Book(String bookName, String writerName, double price, String picture, String status, int stock,
+            String description) {
         this.bookName = bookName;
-        this.price = price;
         this.writerName = writerName;
+        this.price = price;
         this.picture = picture;
         this.status = status;
         this.stock = stock;
         this.description = description;
-        this.categories = new ArrayList<>();
     }
 
-    // Getters and Setters
     public int getBookId() {
         return bookId;
     }
@@ -49,20 +44,20 @@ public class Book {
         this.bookName = bookName;
     }
 
-    public double getPrice() {
-        return price;
-    }
-
-    public void setPrice(double price) {
-        this.price = price;
-    }
-
     public String getWriterName() {
         return writerName;
     }
 
     public void setWriterName(String writerName) {
         this.writerName = writerName;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+
+    public void setPrice(double price) {
+        this.price = price;
     }
 
     public String getPicture() {
@@ -95,32 +90,5 @@ public class Book {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public List<Category> getCategories() {
-        return categories;
-    }
-
-    public void setCategories(List<Category> categories) {
-        this.categories = categories;
-    }
-
-    public void addCategory(Category category) {
-        this.categories.add(category);
-    }
-
-    @Override
-    public String toString() {
-        return "Book{" +
-                "bookId=" + bookId +
-                ", bookName='" + bookName + '\'' +
-                ", price=" + price +
-                ", writerName='" + writerName + '\'' +
-                ", picture='" + picture + '\'' +
-                ", status='" + status + '\'' +
-                ", stock=" + stock +
-                ", description='" + description + '\'' +
-                ", categories=" + categories +
-                '}';
     }
 }

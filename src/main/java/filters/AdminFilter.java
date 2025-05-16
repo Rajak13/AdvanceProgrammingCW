@@ -23,17 +23,31 @@ public class AdminFilter implements Filter {
         HttpServletResponse httpResponse = (HttpServletResponse) response;
         HttpSession session = httpRequest.getSession(false);
 
-        // Check if user is logged in and is an admin
+        // Allow normal users to POST to /admin/orders for order creation
+        String method = httpRequest.getMethod();
+        String uri = httpRequest.getRequestURI();
         if (session != null && session.getAttribute("user") != null) {
             User user = (User) session.getAttribute("user");
             if (user.isAdmin()) {
                 // User is an admin, allow access
                 chain.doFilter(request, response);
                 return;
+            } else if ("POST".equalsIgnoreCase(method) && uri.endsWith("/admin/orders")) {
+                // Allow normal users to place orders
+                chain.doFilter(request, response);
+                return;
             }
         }
 
-        // User is not logged in or is not an admin, redirect to login
-        httpResponse.sendRedirect(httpRequest.getContextPath() + "/login");
+        // User is not logged in or is not an admin, show access denied
+        String accept = httpRequest.getHeader("Accept");
+        if (accept != null && accept.contains("application/json")) {
+            httpResponse.setContentType("application/json");
+            httpResponse.setCharacterEncoding("UTF-8");
+            httpResponse.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            httpResponse.getWriter().write("{\"error\":\"Unauthorized access\"}");
+        } else {
+            httpRequest.getRequestDispatcher("/views/errors/access-denied.jsp").forward(httpRequest, httpResponse);
+        }
     }
 }
