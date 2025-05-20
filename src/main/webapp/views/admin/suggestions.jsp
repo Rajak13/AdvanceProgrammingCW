@@ -725,5 +725,3 @@
         }
     }
 </script>
-
-<jsp:include page="common/admin_footer.jsp" /> 

@@ -31,7 +31,9 @@ public class OrderDAO {
 
     private static final String GET_ORDER = "SELECT * FROM `order` WHERE Order_ID = ?";
     private static final String GET_USER_ORDERS = "SELECT * FROM `order` WHERE User_ID = ? ORDER BY Order_date DESC";
-    private static final String GET_ALL_ORDERS = "SELECT * FROM `order` ORDER BY Order_date DESC";
+    private static final String GET_ALL_ORDERS = "SELECT o.*, u.* FROM `order` o " +
+            "JOIN User u ON o.User_ID = u.User_ID " +
+            "ORDER BY o.Order_date DESC";
     private static final String CREATE_ORDER = "INSERT INTO `order` (User_ID, Order_date, Total_amount, Status, Shipping_address, Payment_method) VALUES (?, ?, ?, ?, ?, ?)";
     private static final String UPDATE_ORDER_STATUS = "UPDATE `order` SET Status = ? WHERE Order_ID = ?";
 
@@ -57,7 +59,8 @@ public class OrderDAO {
 
     public List<Order> getUserOrders(int userId) throws SQLException {
         List<Order> orders = new ArrayList<>();
-        try (PreparedStatement stmt = conn.prepareStatement(GET_USER_ORDERS)) {
+        String sql = "SELECT Order_ID, User_ID, Order_date, Total_amount, Status, Shipping_address, Payment_method FROM `order` WHERE User_ID = ? ORDER BY Order_date DESC";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, userId);
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
@@ -67,6 +70,8 @@ public class OrderDAO {
                     order.setOrderDate(rs.getTimestamp("Order_date"));
                     order.setTotalAmount(rs.getDouble("Total_amount"));
                     order.setStatus(rs.getString("Status"));
+                    order.setShippingAddress(rs.getString("Shipping_address"));
+                    order.setPaymentMethod(rs.getString("Payment_method"));
                     orders.add(order);
                 }
             }
@@ -166,6 +171,57 @@ public class OrderDAO {
             }
         }
         return 0.0;
+    }
+
+    /**
+     * Get the average total amount of all orders.
+     */
+    public double getAverageOrderValue() throws SQLException {
+        String sql = "SELECT AVG(Total_amount) as average FROM `order`";
+        try (Connection conn = DBUtil.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql);
+                ResultSet rs = stmt.executeQuery()) {
+            if (rs.next()) {
+                return rs.getDouble("average");
+            }
+        }
+        return 0.0;
+    }
+
+    /**
+     * Get the count of orders with 'Pending' status.
+     */
+    public int getPendingOrdersCount() throws SQLException {
+        String sql = "SELECT COUNT(*) FROM `order` WHERE Status = 'Pending'";
+        try (Connection conn = DBUtil.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql);
+                ResultSet rs = stmt.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        }
+        return 0;
+    }
+
+    /**
+     * Get the total number of books sold today.
+     */
+    public int getBooksSoldToday() throws SQLException {
+        String sql = "SELECT SUM(oi.Quantity) AS total_sold FROM order_item oi JOIN `order` o ON oi.Order_id = o.Order_id WHERE DATE(o.Order_date) = CURDATE()";
+        try (Connection conn = DBUtil.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql);
+                ResultSet rs = stmt.executeQuery()) {
+            if (rs.next()) {
+                // SUM() can return NULL if there are no rows, so handle that case
+                Object result = rs.getObject("total_sold");
+                if (result != null) {
+                    return rs.getInt("total_sold");
+                } else {
+                    return 0;
+                }
+            }
+        }
+        return 0;
     }
 
     /**
@@ -295,9 +351,13 @@ public class OrderDAO {
 
     public List<Order> getRecentOrders(int limit) throws SQLException {
         List<Order> orders = new ArrayList<>();
-        String sql = "SELECT o.*, u.name as customer_name, u.email as customer_email " +
+        String sql = "SELECT o.*, u.name as customer_name, u.email as customer_email, " +
+                "COALESCE(SUM(oi.quantity), 0) as bookCount, p.status as paymentStatus " +
                 "FROM `order` o " +
                 "JOIN user u ON o.user_id = u.user_id " +
+                "LEFT JOIN order_item oi ON o.Order_id = oi.Order_id " +
+                "LEFT JOIN payment p ON o.Order_id = p.Order_id " +
+                "GROUP BY o.Order_id, u.name, u.email, p.status " +
                 "ORDER BY o.Order_date DESC " +
                 "LIMIT ?";
 
@@ -311,11 +371,10 @@ public class OrderDAO {
                 order.setOrderDate(rs.getTimestamp("Order_date"));
                 order.setTotalAmount(rs.getDouble("Total_amount"));
                 order.setStatus(rs.getString("status"));
-
-                User user = new User();
-                user.setName(rs.getString("customer_name"));
-                user.setEmail(rs.getString("customer_email"));
-                order.setUser(user);
+                order.setCustomerName(rs.getString("customer_name"));
+                order.setCustomerEmail(rs.getString("customer_email"));
+                order.setBookCount(rs.getInt("bookCount"));
+                order.setPaymentStatus(rs.getString("paymentStatus"));
 
                 orders.add(order);
             }

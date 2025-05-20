@@ -115,7 +115,7 @@
                     <label for="remember">Remember me</label>
                 </div>
                 
-                <a href="${pageContext.request.contextPath}/forgot-password">
+                <a href="${pageContext.request.contextPath}/auth/forgot-password" class="forgot-password-link">
                     <i class="fas fa-key"></i> Forgot your password?
                 </a>
                 <button type="submit">

@@ -10,46 +10,10 @@
 </head>
 <body>
     <div class="admin-container">
-        <aside class="admin-sidebar">
-            <div class="sidebar-header">
-                <h2>Panna<span>Admin</span></h2>
-            </div>
-            <nav class="sidebar-nav">
-                <ul>
-                    <li><a href="${pageContext.request.contextPath}/admin/dashboard"><i class="fas fa-home"></i><span>Dashboard</span></a></li>
-                    <li><a href="${pageContext.request.contextPath}/admin/books"><i class="fas fa-book"></i><span>Books</span></a></li>
-                    <li><a href="${pageContext.request.contextPath}/admin/categories"><i class="fas fa-tags"></i><span>Categories</span></a></li>
-                    <li class="active"><a href="${pageContext.request.contextPath}/admin/users"><i class="fas fa-users"></i><span>Users</span></a></li>
-                    <li><a href="${pageContext.request.contextPath}/admin/orders"><i class="fas fa-shopping-bag"></i><span>Orders</span></a></li>
-                    <li><a href="${pageContext.request.contextPath}/admin/profile"><i class="fas fa-user"></i><span>Profile</span></a></li>
-                    <li><a href="${pageContext.request.contextPath}/admin/settings"><i class="fas fa-cog"></i><span>Settings</span></a></li>
-                </ul>
-            </nav>
-        </aside>
-
+        <jsp:include page="common/sidebar.jsp" />
+        
         <main class="admin-main">
-            <header class="admin-header">
-                <div class="header-left">
-                    <button class="sidebar-toggle"><i class="fas fa-bars"></i></button>
-                    <div class="search-bar">
-                        <input type="text" placeholder="Search users...">
-                        <button><i class="fas fa-search"></i></button>
-                    </div>
-                </div>
-                <div class="header-right">
-                    <div class="notifications">
-                        <i class="fas fa-bell"></i>
-                        <span class="badge">3</span>
-                    </div>
-                    <div class="user-menu">
-                        <div class="user-info">
-                            <c:if test="${not empty sessionScope.user}">
-                                <span>${sessionScope.user.name}</span>
-                            </c:if>
-                        </div>
-                    </div>
-                </div>
-            </header>
+            <jsp:include page="common/header.jsp" />
 
             <div class="dashboard-content">
                 <div class="dashboard-header">

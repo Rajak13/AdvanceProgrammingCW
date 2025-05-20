@@ -1,6 +1,8 @@
 package controller;
 
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 
 import dao.UserDAO;
@@ -25,7 +27,9 @@ public class AuthServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        String action = request.getPathInfo();
+        String path = request.getPathInfo();
+        if (path == null)
+            path = "/";
 
         // Get or create session
         HttpSession session = request.getSession(true);
@@ -36,53 +40,67 @@ public class AuthServlet extends HttpServlet {
             return;
         }
 
-        if (action == null) {
-            // Show the combined auth page with login panel active by default
-            request.setAttribute("activePanel", "login");
-            request.getRequestDispatcher("/views/auth/auth.jsp").forward(request, response);
-            return;
-        }
-
-        switch (action) {
+        switch (path) {
+            case "/":
+                // Show login/register page with default panel
+                request.setAttribute("activePanel",
+                        request.getParameter("panel") != null ? request.getParameter("panel") : "login");
+                request.getRequestDispatcher("/views/auth/auth.jsp").forward(request, response);
+                break;
             case "/login":
-                // Show the combined auth page with login panel active
+                // Show login panel
                 request.setAttribute("activePanel", "login");
                 request.getRequestDispatcher("/views/auth/auth.jsp").forward(request, response);
                 break;
             case "/register":
-                // Show the combined auth page with register panel active
+                // Show register panel
                 request.setAttribute("activePanel", "register");
                 request.getRequestDispatcher("/views/auth/auth.jsp").forward(request, response);
+                break;
+            case "/forgot-password":
+                // Show forgot password form
+                request.getRequestDispatcher("/views/auth/forgot-password.jsp").forward(request, response);
+                break;
+            case "/reset-password":
+                // Show reset password form
+                String email = request.getParameter("email");
+                if (email == null || email.trim().isEmpty()) {
+                    response.sendRedirect(request.getContextPath() + "/auth/forgot-password");
+                    return;
+                }
+                request.setAttribute("email", email);
+                request.getRequestDispatcher("/views/auth/reset-password.jsp").forward(request, response);
                 break;
             case "/logout":
                 logout(request, response);
                 break;
             default:
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
-                break;
         }
     }
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        String action = request.getPathInfo();
+        String path = request.getPathInfo();
+        if (path == null)
+            path = "/";
 
-        if (action == null) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST);
-            return;
-        }
-
-        switch (action) {
+        switch (path) {
             case "/login":
                 login(request, response);
                 break;
             case "/register":
                 register(request, response);
                 break;
+            case "/forgot-password":
+                handleForgotPassword(request, response);
+                break;
+            case "/reset-password":
+                handlePasswordReset(request, response);
+                break;
             default:
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
-                break;
         }
     }
 
@@ -175,5 +193,73 @@ public class AuthServlet extends HttpServlet {
             session.invalidate();
         }
         response.sendRedirect(request.getContextPath() + "/auth/login");
+    }
+
+    private void handleForgotPassword(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        String email = request.getParameter("email");
+
+        if (email == null || email.trim().isEmpty()) {
+            request.setAttribute("errorMessage", "Please enter your email address");
+            request.getRequestDispatcher("/views/auth/forgot-password.jsp").forward(request, response);
+            return;
+        }
+
+        try {
+            UserDAO userDAO = new UserDAO();
+            User user = userDAO.getUserByEmail(email);
+
+            if (user != null) {
+                // In a real application, you would send an email here
+                // For now, we'll just redirect to the reset password page
+                response.sendRedirect(request.getContextPath() + "/auth/reset-password?email=" +
+                        URLEncoder.encode(email, StandardCharsets.UTF_8.toString()));
+            } else {
+                request.setAttribute("errorMessage", "No account found with that email address");
+                request.getRequestDispatcher("/views/auth/forgot-password.jsp").forward(request, response);
+            }
+        } catch (Exception e) {
+            request.setAttribute("errorMessage", "An error occurred. Please try again.");
+            request.getRequestDispatcher("/views/auth/forgot-password.jsp").forward(request, response);
+        }
+    }
+
+    private void handlePasswordReset(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        String email = request.getParameter("email");
+        String newPassword = request.getParameter("newPassword");
+        String confirmPassword = request.getParameter("confirmPassword");
+
+        if (email == null || newPassword == null || confirmPassword == null ||
+                email.trim().isEmpty() || newPassword.trim().isEmpty() || confirmPassword.trim().isEmpty()) {
+            request.setAttribute("errorMessage", "All fields are required");
+            request.setAttribute("email", email);
+            request.getRequestDispatcher("/views/auth/reset-password.jsp").forward(request, response);
+            return;
+        }
+
+        if (!newPassword.equals(confirmPassword)) {
+            request.setAttribute("errorMessage", "Passwords do not match");
+            request.setAttribute("email", email);
+            request.getRequestDispatcher("/views/auth/reset-password.jsp").forward(request, response);
+            return;
+        }
+
+        try {
+            UserDAO userDAO = new UserDAO();
+            if (userDAO.resetPasswordByEmail(email, newPassword)) {
+                request.setAttribute("successMessage",
+                        "Password has been reset successfully. Please login with your new password.");
+                request.getRequestDispatcher("/views/auth/auth.jsp").forward(request, response);
+            } else {
+                request.setAttribute("errorMessage", "Failed to reset password. Please try again.");
+                request.setAttribute("email", email);
+                request.getRequestDispatcher("/views/auth/reset-password.jsp").forward(request, response);
+            }
+        } catch (Exception e) {
+            request.setAttribute("errorMessage", "An error occurred. Please try again.");
+            request.setAttribute("email", email);
+            request.getRequestDispatcher("/views/auth/reset-password.jsp").forward(request, response);
+        }
     }
 }

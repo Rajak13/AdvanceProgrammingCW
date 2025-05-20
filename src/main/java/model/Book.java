@@ -1,6 +1,7 @@
 package model;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Book implements Serializable {
@@ -15,8 +16,12 @@ public class Book implements Serializable {
     private int stock;
     private String description;
     private List<Category> categories;
+    private String categoryName;
+    private int salesCount;
+    private double revenue;
 
     public Book() {
+        this.categories = new ArrayList<>();
     }
 
     public Book(String bookName, String writerName, double price, String picture, String status, int stock,
@@ -92,6 +97,30 @@ public class Book implements Serializable {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getCategoryName() {
+        return categoryName;
+    }
+
+    public void setCategoryName(String categoryName) {
+        this.categoryName = categoryName;
+    }
+
+    public int getSalesCount() {
+        return salesCount;
+    }
+
+    public void setSalesCount(int salesCount) {
+        this.salesCount = salesCount;
+    }
+
+    public double getRevenue() {
+        return revenue;
+    }
+
+    public void setRevenue(double revenue) {
+        this.revenue = revenue;
     }
 
     public List<Category> getCategories() {

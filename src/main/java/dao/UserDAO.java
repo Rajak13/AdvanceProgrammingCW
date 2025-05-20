@@ -286,4 +286,14 @@ public class UserDAO {
         }
         return 0;
     }
+
+    public boolean resetPasswordByEmail(String email, String newPassword) throws SQLException {
+        String sql = "UPDATE User SET password = ? WHERE email = ?";
+        try (Connection conn = DBUtil.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, PasswordUtil.hashPassword(newPassword));
+            stmt.setString(2, email);
+            return stmt.executeUpdate() > 0;
+        }
+    }
 }

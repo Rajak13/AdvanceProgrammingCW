@@ -256,52 +256,39 @@ public class AdminServlet extends HttpServlet {
     }
 
     private void showDashboard(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        try {
-            // Get dashboard statistics
-            int totalUsers = userDAO.getTotalUsers();
-            int newUsersThisMonth = userDAO.getNewUsersThisMonth(); // This now returns total users
-            long totalBooks = bookDAO.getTotalBooks();
-            int newBooksThisMonth = bookDAO.getNewBooksThisMonth();
-            int totalCategories = categoryDAO.getTotalCategories();
-            double totalRevenue = orderDAO.getTotalRevenue();
-            double revenueThisMonth = orderDAO.getRevenueThisMonth();
-            double lastMonthRevenue = orderDAO.getLastMonthRevenue();
-            double revenueGrowth = lastMonthRevenue > 0
-                    ? ((revenueThisMonth - lastMonthRevenue) / lastMonthRevenue) * 100
-                    : 0;
+            throws ServletException, IOException, SQLException {
+        // Fetch dashboard data
+        long totalBooks = bookDAO.getTotalBooks();
+        int totalCustomers = userDAO.getTotalUsers(); // Or userDAO.getActiveUsersCount() if that's preferred
+        double totalRevenue = orderDAO.getTotalRevenue();
+        int totalOrders = orderDAO.getTotalOrders();
 
-            // Get recent orders
-            List<Order> recentOrders = orderDAO.getRecentOrders(5);
+        // Fetch stats requiring new DAO methods
+        double averageOrderValue = orderDAO.getAverageOrderValue();
+        int booksSoldToday = orderDAO.getBooksSoldToday();
+        int pendingOrders = orderDAO.getPendingOrdersCount();
+        int lowStockBooks = bookDAO.getLowStockBooksCount(10); // Threshold set to 10
 
-            // Get monthly revenue data
-            List<Double> monthlyRevenue = orderDAO.getMonthlyRevenue();
+        // Fetch lists of books and orders
+        List<model.Book> topSellingBooks = bookDAO.getTopSellingBooks(10); // Fetch top 10
+        List<model.Order> recentOrders = orderDAO.getRecentOrders(5); // Fetch recent 5
 
-            // Get top selling books
-            List<Book> topSellingBooks = bookDAO.getTopSellingBooks(5);
+        // Set attributes for JSP
+        request.setAttribute("totalBooks", totalBooks);
+        request.setAttribute("totalCustomers", totalCustomers);
+        request.setAttribute("totalRevenue", totalRevenue);
+        request.setAttribute("totalOrders", totalOrders);
 
-            // Get top categories
-            List<Category> topCategories = categoryDAO.getTopCategories();
+        request.setAttribute("averageOrderValue", averageOrderValue);
+        request.setAttribute("booksSoldToday", booksSoldToday);
+        request.setAttribute("pendingOrders", pendingOrders);
+        request.setAttribute("lowStockBooks", lowStockBooks);
 
-            // Set attributes
-            request.setAttribute("totalUsers", totalUsers);
-            request.setAttribute("newUsersThisMonth", newUsersThisMonth);
-            request.setAttribute("totalBooks", totalBooks);
-            request.setAttribute("newBooksThisMonth", newBooksThisMonth);
-            request.setAttribute("totalCategories", totalCategories);
-            request.setAttribute("totalRevenue", totalRevenue);
-            request.setAttribute("revenueGrowth", Math.round(revenueGrowth * 10) / 10.0);
-            request.setAttribute("recentOrders", recentOrders);
-            request.setAttribute("monthlyRevenue", monthlyRevenue);
-            request.setAttribute("topSellingBooks", topSellingBooks);
-            request.setAttribute("topCategories", topCategories);
+        request.setAttribute("topSellingBooks", topSellingBooks);
+        request.setAttribute("recentOrders", recentOrders);
 
-            // Forward to dashboard
-            request.getRequestDispatcher("/views/admin/dashboard.jsp").forward(request, response);
-        } catch (SQLException e) {
-            e.printStackTrace();
-            throw new ServletException("Error loading dashboard data", e);
-        }
+        // Forward to dashboard JSP
+        request.getRequestDispatcher("/views/admin/dashboard.jsp").forward(request, response);
     }
 
     private void listUsers(HttpServletRequest request, HttpServletResponse response)
@@ -399,18 +386,64 @@ public class AdminServlet extends HttpServlet {
     private void updatePaymentStatus(HttpServletRequest request, HttpServletResponse response)
             throws SQLException, IOException {
         try {
-            int orderId = Integer.parseInt(request.getParameter("orderId"));
+            String orderIdParam = request.getParameter("orderId");
             String status = request.getParameter("status");
-            if (paymentDAO.updatePaymentStatus(orderId, status)) {
+
+            System.out.println("Updating payment status - Order ID: " + orderIdParam + ", Status: " + status);
+
+            if (orderIdParam == null || orderIdParam.trim().isEmpty()) {
                 response.setContentType("application/json");
+                response.getWriter().write("{\"success\":false, \"error\":\"Order ID is required\"}");
+                return;
+            }
+
+            int orderId;
+            try {
+                orderId = Integer.parseInt(orderIdParam);
+            } catch (NumberFormatException e) {
+                response.setContentType("application/json");
+                response.getWriter().write("{\"success\":false, \"error\":\"Invalid Order ID format\"}");
+                return;
+            }
+
+            if (status == null || status.trim().isEmpty()) {
+                response.setContentType("application/json");
+                response.getWriter().write("{\"success\":false, \"error\":\"Payment status is required\"}");
+                return;
+            }
+
+            // First get the payment for this order
+            Payment payment = paymentDAO.getOrderPayment(orderId);
+            if (payment == null) {
+                response.setContentType("application/json");
+                response.getWriter().write("{\"success\":false, \"error\":\"No payment found for this order\"}");
+                return;
+            }
+
+            System.out.println("Found payment - Payment ID: " + payment.getPaymentId() + ", Current Status: "
+                    + payment.getStatus());
+
+            // Update the payment status
+            boolean success = paymentDAO.updatePaymentStatus(payment.getPaymentId(), status);
+            System.out.println("Update result: " + (success ? "Success" : "Failed"));
+
+            response.setContentType("application/json");
+            if (success) {
                 response.getWriter().write("{\"success\":true, \"message\":\"Payment status updated successfully\"}");
             } else {
-                response.setContentType("application/json");
                 response.getWriter().write("{\"success\":false, \"error\":\"Failed to update payment status\"}");
             }
-        } catch (Exception e) {
+        } catch (SQLException e) {
+            System.err.println("SQL Error updating payment status: " + e.getMessage());
+            e.printStackTrace();
             response.setContentType("application/json");
-            response.getWriter().write("{\"success\":false, \"error\":\"" + e.getMessage() + "\"}");
+            response.getWriter().write("{\"success\":false, \"error\":\"Database error: " + e.getMessage() + "\"}");
+        } catch (Exception e) {
+            System.err.println("Error updating payment status: " + e.getMessage());
+            e.printStackTrace();
+            response.setContentType("application/json");
+            response.getWriter()
+                    .write("{\"success\":false, \"error\":\"An unexpected error occurred: " + e.getMessage() + "\"}");
         }
     }
 }

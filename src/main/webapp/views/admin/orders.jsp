@@ -459,30 +459,55 @@
         }
 
         function updatePaymentStatus(orderId, newStatus) {
-            if (!orderId || !newStatus) {
-                console.error('Order ID or status is missing');
-                showNotification('Order ID or status is missing', 'error');
+            console.log('Attempting to update payment status for Order ID:', orderId, 'to status:', newStatus);
+            if (!orderId) {
+                console.error('Order ID is missing for status update');
+                showNotification('Error: Order ID is missing for payment status update.', 'error');
                 return;
             }
+            if (!newStatus) {
+                console.error('New status is missing for order ID:', orderId);
+                showNotification('Error: New status is missing for payment status update.', 'error');
+                return;
+            }
+
+            const params = new URLSearchParams();
+            params.append('orderId', orderId);
+            params.append('status', newStatus);
 
             fetch(window.ctx + '/admin/update-payment-status', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
+                    'Accept': 'application/json'
                 },
-                body: `orderId=${orderId}&status=${newStatus}`
+                body: params
             })
-            .then(response => response.json())
+            .then(async response => {
+                const responseText = await response.text();
+                console.log('Raw server response:', responseText);
+                
+                if (!response.ok) {
+                    throw new Error(`Server responded with ${response.status}: ${responseText}`);
+                }
+                
+                try {
+                    return JSON.parse(responseText);
+                } catch (e) {
+                    console.error('Failed to parse server response as JSON:', e);
+                    throw new Error('Server returned invalid JSON response');
+                }
+            })
             .then(data => {
                 if (data.success) {
-                    showNotification('Payment status updated successfully', 'success');
+                    showNotification(data.message || 'Payment status updated successfully', 'success');
                 } else {
                     throw new Error(data.error || 'Failed to update payment status');
                 }
             })
             .catch(error => {
-                console.error('Error:', error);
-                showNotification(error.message, 'error');
+                console.error('Error updating payment status:', error);
+                showNotification(error.message || 'Error updating payment status', 'error');
             });
         }
 

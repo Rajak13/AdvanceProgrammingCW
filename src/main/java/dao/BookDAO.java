@@ -670,10 +670,9 @@ public class BookDAO {
     }
 
     public int getNewBooksThisMonth() throws SQLException {
-        String sql = "SELECT COUNT(*) FROM book";
-        try (Connection conn = DBUtil.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(sql)) {
-            ResultSet rs = stmt.executeQuery();
+        String sql = "SELECT COUNT(*) FROM book WHERE date >= LAST_DAY(NOW()) + INTERVAL 1 DAY - INTERVAL 1 MONTH";
+        try (PreparedStatement stmt = conn.prepareStatement(sql);
+                ResultSet rs = stmt.executeQuery()) {
             if (rs.next()) {
                 return rs.getInt(1);
             }
@@ -681,12 +680,36 @@ public class BookDAO {
         return 0;
     }
 
+    /**
+     * Get the count of books with stock below a certain threshold.
+     * 
+     * @param threshold The stock quantity below which a book is considered low
+     *                  stock.
+     * @return The number of low stock books.
+     * @throws SQLException
+     */
+    public int getLowStockBooksCount(int threshold) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM book WHERE stock < ?";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, threshold);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        }
+        return 0;
+    }
+
     public List<Book> getTopSellingBooks(int limit) throws SQLException {
         List<Book> books = new ArrayList<>();
-        String sql = "SELECT b.*, COUNT(oi.book_id) as sales_count, SUM(oi.quantity * oi.price) as revenue " +
+        String sql = "SELECT b.*, COUNT(oi.book_id) as sales_count, SUM(oi.quantity * oi.price) as revenue, c.category_name "
+                +
                 "FROM book b " +
                 "LEFT JOIN order_item oi ON b.Book_ID = oi.Book_ID " +
-                "GROUP BY b.Book_ID " +
+                "LEFT JOIN book_category bc ON b.Book_ID = bc.Book_ID " +
+                "LEFT JOIN category c ON bc.Category_ID = c.Category_ID " +
+                "GROUP BY b.Book_ID, c.category_name " +
                 "ORDER BY sales_count DESC " +
                 "LIMIT ?";
 
@@ -694,18 +717,30 @@ public class BookDAO {
                 PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, limit);
             ResultSet rs = stmt.executeQuery();
+            Map<Integer, Book> bookMap = new HashMap<>();
+
             while (rs.next()) {
-                Book book = new Book();
-                book.setBookId(rs.getInt("Book_ID"));
-                book.setBookName(rs.getString("Book_name"));
-                book.setWriterName(rs.getString("writer_name"));
-                book.setPrice(rs.getDouble("price"));
-                book.setPicture(rs.getString("picture"));
-                book.setStatus(rs.getString("status"));
-                book.setStock(rs.getInt("stock"));
-                book.setDescription(rs.getString("description"));
-                books.add(book);
+                int bookId = rs.getInt("Book_ID");
+                Book book = bookMap.get(bookId);
+                if (book == null) {
+                    book = new Book();
+                    book.setBookId(bookId);
+                    book.setBookName(rs.getString("Book_name"));
+                    book.setWriterName(rs.getString("writer_name"));
+                    book.setPrice(rs.getDouble("price"));
+                    book.setPicture(rs.getString("picture"));
+                    book.setStatus(rs.getString("status"));
+                    book.setStock(rs.getInt("stock"));
+                    book.setDescription(rs.getString("description"));
+                    book.setSalesCount(rs.getInt("sales_count"));
+                    book.setRevenue(rs.getDouble("revenue"));
+                    bookMap.put(bookId, book);
+                }
+                if (book.getCategoryName() == null) {
+                    book.setCategoryName(rs.getString("category_name"));
+                }
             }
+            books.addAll(bookMap.values());
         }
         return books;
     }

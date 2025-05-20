@@ -19,12 +19,6 @@
                     <span>Books</span>
                 </a>
             </li>
-            <li class="${pageContext.request.servletPath == '/views/admin/categories.jsp' ? 'active' : ''}">
-                <a href="${pageContext.request.contextPath}/admin/categories">
-                    <i class="fas fa-tags"></i>
-                    <span>Categories</span>
-                </a>
-            </li>
             <li class="${pageContext.request.servletPath == '/views/admin/users.jsp' ? 'active' : ''}">
                 <a href="${pageContext.request.contextPath}/admin/users">
                     <i class="fas fa-users"></i>

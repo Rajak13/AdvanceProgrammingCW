@@ -15,6 +15,9 @@ public class Order {
     private User user;
     private List<OrderItem> orderItems;
     private String paymentStatus;
+    private int bookCount; // Added for dashboard display
+    private String customerName; // Added for dashboard display
+    private String customerEmail; // Added for dashboard display
 
     public Order() {
         this.orderItems = new ArrayList<>();
@@ -90,6 +93,38 @@ public class Order {
 
     public void setOrderItems(List<OrderItem> orderItems) {
         this.orderItems = orderItems;
+    }
+
+    public String getPaymentStatus() {
+        return paymentStatus;
+    }
+
+    public void setPaymentStatus(String paymentStatus) {
+        this.paymentStatus = paymentStatus;
+    }
+
+    public int getBookCount() {
+        return bookCount;
+    }
+
+    public void setBookCount(int bookCount) {
+        this.bookCount = bookCount;
+    }
+
+    public String getCustomerName() {
+        return customerName;
+    }
+
+    public void setCustomerName(String customerName) {
+        this.customerName = customerName;
+    }
+
+    public String getCustomerEmail() {
+        return customerEmail;
+    }
+
+    public void setCustomerEmail(String customerEmail) {
+        this.customerEmail = customerEmail;
     }
 
     @Override
