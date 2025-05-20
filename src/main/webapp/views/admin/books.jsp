@@ -12,87 +12,10 @@
 </head>
 <body>
     <div class="admin-container">
-        <!-- Sidebar -->
-        <aside class="admin-sidebar">
-            <div class="sidebar-header">
-                <h2>Panna BookStore</h2>
-            </div>
-            <nav class="sidebar-nav">
-                <ul>
-                    <li>
-                        <a href="${pageContext.request.contextPath}/admin/dashboard">
-                            <i class="fas fa-home"></i>
-                            <span>Dashboard</span>
-                        </a>
-                    </li>
-                    <li class="active">
-                        <a href="${pageContext.request.contextPath}/admin/books">
-                            <i class="fas fa-book"></i>
-                            <span>Books</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="${pageContext.request.contextPath}/admin/categories">
-                            <i class="fas fa-tags"></i>
-                            <span>Categories</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="${pageContext.request.contextPath}/admin/orders">
-                            <i class="fas fa-shopping-bag"></i>
-                            <span>Orders</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="${pageContext.request.contextPath}/admin/users">
-                            <i class="fas fa-users"></i>
-                            <span>Users</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="${pageContext.request.contextPath}/admin/profile">
-                            <i class="fas fa-user"></i>
-                            <span>Profile</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="${pageContext.request.contextPath}/admin/settings">
-                            <i class="fas fa-cog"></i>
-                            <span>Settings</span>
-                        </a>
-                    </li>
-                </ul>
-            </nav>
-        </aside>
-
-        <!-- Main Content -->
+        <jsp:include page="common/sidebar.jsp" />
+        
         <main class="admin-main">
-            <!-- Header -->
-            <header class="admin-header">
-                <div class="header-left">
-                    <button class="sidebar-toggle">
-                        <i class="fas fa-bars"></i>
-                    </button>
-                    <div class="search-bar">
-                        <input type="text" placeholder="Search books...">
-                        <button><i class="fas fa-search"></i></button>
-                    </div>
-                </div>
-                <div class="header-right">
-                    <div class="language-selector">
-                        <img src="${pageContext.request.contextPath}/assets/images/en-flag.png" alt="English">
-                    </div>
-                    <div class="notifications">
-                        <i class="fas fa-bell"></i>
-                        <span class="badge">2</span>
-                    </div>
-                    <div class="user-profile">
-                        <img src="${pageContext.request.contextPath}/assets/images/user-avatar.jpg" alt="User">
-                        <span>Aiden Max</span>
-                        <i class="fas fa-chevron-down"></i>
-                    </div>
-                </div>
-            </header>
+            <jsp:include page="common/header.jsp" />
 
             <!-- Books Content -->
             <div class="dashboard-content">
@@ -104,8 +27,8 @@
                         </div>
                         <div class="stat-info">
                             <h3>Total Books</h3>
-                            <p class="stat-value">1,234</p>
-                            <p class="stat-change">+15% last month</p>
+                            <p class="stat-value">${totalBooks}</p>
+                            <p class="stat-change">+${newBooksThisMonth} this month</p>
                         </div>
                     </div>
                     <div class="stat-card">
@@ -114,8 +37,7 @@
                         </div>
                         <div class="stat-info">
                             <h3>Categories</h3>
-                            <p class="stat-value">24</p>
-                            <p class="stat-change">+5% last month</p>
+                            <p class="stat-value">${totalCategories}</p>
                         </div>
                     </div>
                     <div class="stat-card">
@@ -124,8 +46,8 @@
                         </div>
                         <div class="stat-info">
                             <h3>Revenue</h3>
-                            <p class="stat-value">$45,678</p>
-                            <p class="stat-change">+20% last month</p>
+                            <p class="stat-value">$${totalRevenue}</p>
+                            <p class="stat-change">+${revenueGrowth}% this month</p>
                         </div>
                     </div>
                 </div>
@@ -139,7 +61,7 @@
                                 <select class="form-control">
                                     <option value="">All Categories</option>
                                     <c:forEach var="category" items="${categories}">
-                                        <option value="${category.categoryId}">${category.categoryName}</option>
+                                        <option value="${category.id}">${category.name}</option>
                                     </c:forEach>
                                 </select>
                                 <select class="form-control">
@@ -169,37 +91,28 @@
                             <c:forEach var="book" items="${books}">
                                 <tr>
                                     <td>
-                                        <div class="product-item">
-                                            <c:if test="${not empty book.picture}">
-                                                <img src="${pageContext.request.contextPath}/${book.picture}" alt="${book.bookName}" class="product-image">
-                                            </c:if>
-                                            <div class="product-info">
+                                        <div class="book-item">
+                                            <img src="${pageContext.request.contextPath}/uploads/books/${book.picture}" alt="${book.bookName}" class="book-image">
+                                            <div class="book-info">
                                                 <h4>${book.bookName}</h4>
                                             </div>
                                         </div>
                                     </td>
                                     <td>${book.writerName}</td>
                                     <td>
-                                        <c:forEach var="category" items="${book.categories}" varStatus="status">
-                                            <span class="category-badge">${category.categoryName}</span>
-                                            <c:if test="${!status.last}">, </c:if>
+                                        <c:forEach var="category" items="${book.categories}">
+                                            <span class="category-badge">${category.name}</span>
                                         </c:forEach>
                                     </td>
-                                    <td>$${book.price}</td>
+                                    <td>${book.price}</td>
                                     <td>${book.stock}</td>
                                     <td>
-                                        <span class="status-badge ${book.status}">
-                                            ${book.status}
-                                        </span>
+                                        <span class="status-badge ${book.status}">${book.status}</span>
                                     </td>
                                     <td>
                                         <div class="action-buttons">
-                                            <button class="btn-icon" onclick="editBook('${book.bookId}')">
-                                                <i class="fas fa-edit"></i>
-                                            </button>
-                                            <button class="btn-icon" onclick="deleteBook('${book.bookId}')">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
+                                            <button class="btn-icon" onclick="editBook('${book.bookId}')"><i class="fas fa-edit"></i></button>
+                                            <button class="btn-icon" onclick="deleteBook('${book.bookId}')"><i class="fas fa-trash"></i></button>
                                         </div>
                                     </td>
                                 </tr>
@@ -254,7 +167,7 @@
                         <select id="category" name="category" class="form-control" required>
                             <option value="">Select Category</option>
                             <c:forEach var="category" items="${categories}">
-                                <option value="${category.categoryId}">${category.categoryName}</option>
+                                <option value="${category.id}">${category.name}</option>
                             </c:forEach>
                         </select>
                     </div>
@@ -348,7 +261,7 @@
 
                 try {
                     console.log('Submitting form data...');
-                    const response = await fetch(window.ctx + '/admin/books', {
+                    const response = await fetch(window.ctx + '/books', {
                         method: 'POST',
                         body: formData
                     });
@@ -382,7 +295,7 @@
             // Edit book function
             window.editBook = async function(id) {
                 try {
-                    const response = await fetch(window.ctx + '/admin/books?bookId=' + id, {
+                    const response = await fetch(window.ctx + '/books?bookId=' + id, {
                         headers: { 'Accept': 'application/json' }
                     });
                     if (!response.ok) {
@@ -427,7 +340,7 @@
                 }
 
                 try {
-                    const response = await fetch(window.ctx + '/admin/books?bookId=' + id, {
+                    const response = await fetch(window.ctx + '/books?bookId=' + id, {
                         method: 'DELETE',
                         headers: { 'Accept': 'application/json' }
                     });

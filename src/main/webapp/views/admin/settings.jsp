@@ -5,10 +5,154 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Settings - Admin Dashboard</title>
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/admin.css">
+    <title>Store Settings - Panna BookStore</title>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/home.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon" type="image/x-icon" href="${pageContext.request.contextPath}/images/favicon.ico">
+    <style>
+        .admin-container {
+            display: flex;
+            min-height: 100vh;
+            background: var(--light-bg);
+        }
+
+        .admin-sidebar {
+            width: 250px;
+            background: var(--primary-dark);
+            color: var(--white);
+            padding: 1rem;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .admin-main {
+            flex: 1;
+            margin-left: 250px;
+            padding: 2rem;
+        }
+
+        .settings-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .settings-container h2 {
+            color: var(--primary-dark);
+            margin-bottom: 2rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--accent-color);
+            display: inline-block;
+        }
+
+        .settings-sections {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .settings-section {
+            background: var(--white);
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+
+        .settings-section h3 {
+            color: var(--primary-dark);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--accent-color);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--primary-dark);
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            transition: var(--transition);
+        }
+
+        .form-control:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 2px rgba(255, 87, 34, 0.1);
+            outline: none;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem 2rem;
+            border-radius: var(--border-radius);
+            color: var(--white);
+            font-weight: 500;
+            z-index: 1000;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .notification.success {
+            background: #4CAF50;
+        }
+
+        .notification.error {
+            background: #f44336;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: var(--border-radius);
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .btn-primary {
+            background: var(--accent-color);
+            color: var(--white);
+        }
+
+        .btn-primary:hover {
+            background: #E64A19;
+            transform: translateY(-2px);
+        }
+
+        .settings-section .form-group:last-child {
+            margin-bottom: 0;
+        }
+    </style>
 </head>
 <body>
     <div class="admin-container">
@@ -38,7 +182,7 @@
                         </a>
                     </li>
                     <li>
-                        <a href="${pageContext.request.contextPath}/admin/orders">
+                        <a href="${pageContext.request.contextPath}/orders">
                             <i class="fas fa-shopping-bag"></i>
                             <span>Orders</span>
                         </a>
@@ -67,224 +211,227 @@
 
         <!-- Main Content -->
         <main class="admin-main">
-            <!-- Header -->
-            <header class="admin-header">
-                <div class="header-left">
-                    <button class="sidebar-toggle">
-                        <i class="fas fa-bars"></i>
-                    </button>
-                    <div class="search-bar">
-                        <input type="text" placeholder="Search...">
-                        <button><i class="fas fa-search"></i></button>
-                    </div>
-                </div>
-                <div class="header-right">
-                    <div class="language-selector">
-                        <img src="${pageContext.request.contextPath}/assets/images/en-flag.png" alt="English">
-                    </div>
-                    <div class="notifications">
-                        <i class="fas fa-bell"></i>
-                        <span class="badge">2</span>
-                    </div>
-                    <div class="user-profile">
-                        <img src="${pageContext.request.contextPath}/assets/images/user-avatar.jpg" alt="User">
-                        <span>Aiden Max</span>
-                        <i class="fas fa-chevron-down"></i>
-                    </div>
-                </div>
-            </header>
+            <div class="settings-container">
+                <h2>Store Settings</h2>
+                
+                <div class="settings-sections">
+                    <!-- General Settings -->
+                    <section class="settings-section">
+                        <h3>General Settings</h3>
+                        <form id="generalSettingsForm" class="settings-form" action="${pageContext.request.contextPath}/admin/settings/general" method="post">
+                            <div class="form-group">
+                                <label for="storeName">Store Name</label>
+                                <input type="text" id="storeName" name="storeName" value="Panna BookStore" class="form-control" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="storeEmail">Store Email</label>
+                                <input type="email" id="storeEmail" name="storeEmail" value="contact@pannabookstore.com" class="form-control" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="storePhone">Store Phone</label>
+                                <input type="tel" id="storePhone" name="storePhone" value="+1 234 567 8900" class="form-control" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="storeAddress">Store Address</label>
+                                <textarea id="storeAddress" name="storeAddress" class="form-control" rows="3" required>123 Book Street, Reading City, RC 12345</textarea>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary">Save General Settings</button>
+                        </form>
+                    </section>
 
-            <!-- Settings Content -->
-            <div class="dashboard-content">
-                <div class="settings-container">
-                    <div class="settings-grid">
-                        <!-- General Settings -->
-                        <div class="settings-card">
-                            <h3>Store Settings</h3>
-                            <form id="generalSettingsForm" class="settings-form">
-                                <div class="form-group">
-                                    <label for="storeName">Store Name</label>
-                                    <input type="text" id="storeName" name="storeName" class="form-control" value="Panna BookStore">
-                                </div>
-                                <div class="form-group">
-                                    <label for="storeUrl">Store URL</label>
-                                    <input type="url" id="storeUrl" name="storeUrl" class="form-control" value="https://pannabooks.com">
-                                </div>
-                                <div class="form-group">
-                                    <label for="contactEmail">Contact Email</label>
-                                    <input type="email" id="contactEmail" name="contactEmail" class="form-control" value="contact@pannabooks.com">
-                                </div>
-                                <div class="form-group">
-                                    <label for="contactPhone">Contact Phone</label>
-                                    <input type="tel" id="contactPhone" name="contactPhone" class="form-control" value="+1 (555) 123-4567">
-                                </div>
-                                <div class="form-group">
-                                    <label for="timezone">Timezone</label>
-                                    <select id="timezone" name="timezone" class="form-control">
-                                        <option value="UTC">UTC</option>
-                                        <option value="America/New_York">Eastern Time</option>
-                                        <option value="America/Chicago">Central Time</option>
-                                        <option value="America/Denver">Mountain Time</option>
-                                        <option value="America/Los_Angeles" selected>Pacific Time</option>
-                                    </select>
-                                </div>
-                                <div class="form-actions">
-                                    <button type="submit" class="btn btn-primary">Save Changes</button>
-                                </div>
-                            </form>
-                        </div>
+                    <!-- Payment Settings -->
+                    <section class="settings-section">
+                        <h3>Payment Settings</h3>
+                        <form id="paymentSettingsForm" class="settings-form" action="${pageContext.request.contextPath}/admin/settings/payment" method="post">
+                            <div class="form-group">
+                                <label for="currency">Currency</label>
+                                <select id="currency" name="currency" class="form-control" required>
+                                    <option value="USD">USD ($)</option>
+                                    <option value="EUR">EUR (€)</option>
+                                    <option value="GBP">GBP (£)</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="taxRate">Tax Rate (%)</label>
+                                <input type="number" id="taxRate" name="taxRate" value="8.5" step="0.1" min="0" max="100" class="form-control" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="enablePaypal" checked>
+                                    Enable PayPal
+                                </label>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="enableStripe" checked>
+                                    Enable Stripe
+                                </label>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary">Save Payment Settings</button>
+                        </form>
+                    </section>
 
-                        <!-- Book Settings -->
-                        <div class="settings-card">
-                            <h3>Book Settings</h3>
-                            <form id="bookSettingsForm" class="settings-form">
-                                <div class="form-group">
-                                    <label>Book Features</label>
-                                    <div class="checkbox-group">
-                                        <div class="checkbox-item">
-                                            <input type="checkbox" id="enableReviews" name="bookFeatures[]" value="reviews" checked>
-                                            <label for="enableReviews">Enable Book Reviews</label>
-                                        </div>
-                                        <div class="checkbox-item">
-                                            <input type="checkbox" id="enableRatings" name="bookFeatures[]" value="ratings" checked>
-                                            <label for="enableRatings">Enable Book Ratings</label>
-                                        </div>
-                                        <div class="checkbox-item">
-                                            <input type="checkbox" id="enableWishlist" name="bookFeatures[]" value="wishlist" checked>
-                                            <label for="enableWishlist">Enable Wishlist</label>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label for="defaultBookImage">Default Book Image</label>
-                                    <input type="file" id="defaultBookImage" name="defaultBookImage" class="form-control" accept="image/*">
-                                </div>
-                                <div class="form-group">
-                                    <label for="bookImageSize">Book Image Size Limit (MB)</label>
-                                    <input type="number" id="bookImageSize" name="bookImageSize" class="form-control" value="5">
-                                </div>
-                                <div class="form-actions">
-                                    <button type="submit" class="btn btn-primary">Save Changes</button>
-                                </div>
-                            </form>
-                        </div>
+                    <!-- Shipping Settings -->
+                    <section class="settings-section">
+                        <h3>Shipping Settings</h3>
+                        <form id="shippingSettingsForm" class="settings-form" action="${pageContext.request.contextPath}/admin/settings/shipping" method="post">
+                            <div class="form-group">
+                                <label for="shippingMethod">Default Shipping Method</label>
+                                <select id="shippingMethod" name="shippingMethod" class="form-control" required>
+                                    <option value="standard">Standard Shipping</option>
+                                    <option value="express">Express Shipping</option>
+                                    <option value="overnight">Overnight Shipping</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="shippingCost">Base Shipping Cost</label>
+                                <input type="number" id="shippingCost" name="shippingCost" value="5.99" step="0.01" min="0" class="form-control" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="freeShippingThreshold">Free Shipping Threshold</label>
+                                <input type="number" id="freeShippingThreshold" name="freeShippingThreshold" value="50.00" step="0.01" min="0" class="form-control" required>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary">Save Shipping Settings</button>
+                        </form>
+                    </section>
 
-                        <!-- Payment Settings -->
-                        <div class="settings-card">
-                            <h3>Payment Settings</h3>
-                            <form id="paymentSettingsForm" class="settings-form">
-                                <div class="form-group">
-                                    <label>Payment Methods</label>
-                                    <div class="checkbox-group">
-                                        <div class="checkbox-item">
-                                            <input type="checkbox" id="stripe" name="paymentMethods[]" value="stripe" checked>
-                                            <label for="stripe">Stripe</label>
-                                        </div>
-                                        <div class="checkbox-item">
-                                            <input type="checkbox" id="paypal" name="paymentMethods[]" value="paypal" checked>
-                                            <label for="paypal">PayPal</label>
-                                        </div>
-                                        <div class="checkbox-item">
-                                            <input type="checkbox" id="bank" name="paymentMethods[]" value="bank">
-                                            <label for="bank">Bank Transfer</label>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label for="currency">Default Currency</label>
-                                    <select id="currency" name="currency" class="form-control">
-                                        <option value="USD" selected>US Dollar (USD)</option>
-                                        <option value="EUR">Euro (EUR)</option>
-                                        <option value="GBP">British Pound (GBP)</option>
-                                        <option value="INR">Indian Rupee (INR)</option>
-                                    </select>
-                                </div>
-                                <div class="form-actions">
-                                    <button type="submit" class="btn btn-primary">Save Changes</button>
-                                </div>
-                            </form>
-                        </div>
-
-                        <!-- Notification Settings -->
-                        <div class="settings-card">
-                            <h3>Notification Settings</h3>
-                            <form id="notificationSettingsForm" class="settings-form">
-                                <div class="form-group">
-                                    <label>Email Notifications</label>
-                                    <div class="toggle-group">
-                                        <div class="toggle-item">
-                                            <label>New Order Notifications</label>
-                                            <div class="toggle-switch">
-                                                <input type="checkbox" id="orderNotifications" name="orderNotifications" checked>
-                                                <label for="orderNotifications"></label>
-                                            </div>
-                                        </div>
-                                        <div class="toggle-item">
-                                            <label>Low Stock Alerts</label>
-                                            <div class="toggle-switch">
-                                                <input type="checkbox" id="stockAlerts" name="stockAlerts" checked>
-                                                <label for="stockAlerts"></label>
-                                            </div>
-                                        </div>
-                                        <div class="toggle-item">
-                                            <label>Book Review Notifications</label>
-                                            <div class="toggle-switch">
-                                                <input type="checkbox" id="reviewNotifications" name="reviewNotifications" checked>
-                                                <label for="reviewNotifications"></label>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="form-actions">
-                                    <button type="submit" class="btn btn-primary">Save Changes</button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
+                    <!-- Email Settings -->
+                    <section class="settings-section">
+                        <h3>Email Settings</h3>
+                        <form id="emailSettingsForm" class="settings-form" action="${pageContext.request.contextPath}/admin/settings/email" method="post">
+                            <div class="form-group">
+                                <label for="smtpHost">SMTP Host</label>
+                                <input type="text" id="smtpHost" name="smtpHost" value="smtp.gmail.com" class="form-control" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="smtpPort">SMTP Port</label>
+                                <input type="number" id="smtpPort" name="smtpPort" value="587" class="form-control" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="smtpUsername">SMTP Username</label>
+                                <input type="email" id="smtpUsername" name="smtpUsername" class="form-control" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="smtpPassword">SMTP Password</label>
+                                <input type="password" id="smtpPassword" name="smtpPassword" class="form-control" required>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary">Save Email Settings</button>
+                        </form>
+                    </section>
                 </div>
             </div>
         </main>
     </div>
 
-    <script src="${pageContext.request.contextPath}/js/admin.js"></script>
     <script>
-        window.ctx = '${pageContext.request.contextPath}';
-        // Form Submissions
+        // Form submission handlers
         document.getElementById('generalSettingsForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            saveSettings('general', this);
-        });
-
-        document.getElementById('bookSettingsForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            saveSettings('book', this);
-        });
-
-        document.getElementById('paymentSettingsForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            saveSettings('payment', this);
-        });
-
-        document.getElementById('notificationSettingsForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            saveSettings('notification', this);
-        });
-
-        function saveSettings(type, form) {
-            const formData = new FormData(form);
+            const formData = new FormData(this);
             
-            fetch(`${window.ctx}/api/settings/${type}`, {
+            fetch('${pageContext.request.contextPath}/admin/settings/general', {
                 method: 'POST',
                 body: formData
             })
             .then(response => {
                 if (response.ok) {
-                    alert('Settings saved successfully!');
+                    showNotification('General settings updated successfully', 'success');
                 } else {
-                    throw new Error('Failed to save settings');
+                    throw new Error('Failed to update general settings');
                 }
             })
-            .catch(error => console.error('Error:', error));
+            .catch(error => {
+                showNotification(error.message, 'error');
+            });
+        });
+
+        document.getElementById('paymentSettingsForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            
+            fetch('${pageContext.request.contextPath}/admin/settings/payment', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (response.ok) {
+                    showNotification('Payment settings updated successfully', 'success');
+                } else {
+                    throw new Error('Failed to update payment settings');
+                }
+            })
+            .catch(error => {
+                showNotification(error.message, 'error');
+            });
+        });
+
+        document.getElementById('shippingSettingsForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            
+            fetch('${pageContext.request.contextPath}/admin/settings/shipping', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (response.ok) {
+                    showNotification('Shipping settings updated successfully', 'success');
+                } else {
+                    throw new Error('Failed to update shipping settings');
+                }
+            })
+            .catch(error => {
+                showNotification(error.message, 'error');
+            });
+        });
+
+        document.getElementById('emailSettingsForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            
+            fetch('${pageContext.request.contextPath}/admin/settings/email', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (response.ok) {
+                    showNotification('Email settings updated successfully', 'success');
+                } else {
+                    throw new Error('Failed to update email settings');
+                }
+            })
+            .catch(error => {
+                showNotification(error.message, 'error');
+            });
+        });
+
+        // Notification function
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                notification.style.transition = 'opacity 0.3s ease-in-out';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
         }
     </script>
 </body>

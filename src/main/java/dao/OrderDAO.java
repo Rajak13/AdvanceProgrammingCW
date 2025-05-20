@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Map;
 
 import model.Order;
+import model.OrderItem;
+import model.User;
 import utils.DBUtil;
 
 /**
@@ -74,7 +76,10 @@ public class OrderDAO {
 
     public List<Order> getAllOrders() throws SQLException {
         List<Order> orders = new ArrayList<>();
-        try (PreparedStatement stmt = conn.prepareStatement(GET_ALL_ORDERS);
+        String sql = "SELECT o.*, u.* FROM `order` o " +
+                "JOIN User u ON o.User_ID = u.User_ID " +
+                "ORDER BY o.Order_date DESC";
+        try (PreparedStatement stmt = conn.prepareStatement(sql);
                 ResultSet rs = stmt.executeQuery()) {
             while (rs.next()) {
                 Order order = new Order();
@@ -83,6 +88,25 @@ public class OrderDAO {
                 order.setOrderDate(rs.getTimestamp("Order_date"));
                 order.setTotalAmount(rs.getDouble("Total_amount"));
                 order.setStatus(rs.getString("Status"));
+                order.setShippingAddress(rs.getString("Shipping_address"));
+                order.setPaymentMethod(rs.getString("Payment_method"));
+
+                // Set User object
+                User user = new User();
+                user.setUserId(rs.getInt("User_ID"));
+                user.setName(rs.getString("name"));
+                user.setEmail(rs.getString("email"));
+                user.setAddress(rs.getString("address"));
+                user.setContact(rs.getString("contact"));
+                user.setPicture(rs.getString("picture"));
+                user.setRole(rs.getString("role"));
+                order.setUser(user);
+
+                // Get order items
+                OrderItemDAO orderItemDAO = new OrderItemDAO();
+                List<OrderItem> orderItems = orderItemDAO.getOrderItems(order.getOrderId());
+                order.setOrderItems(orderItems);
+
                 orders.add(order);
             }
         }
@@ -242,5 +266,75 @@ public class OrderDAO {
             e.printStackTrace();
             return false;
         }
+    }
+
+    public double getRevenueThisMonth() throws SQLException {
+        String sql = "SELECT COALESCE(SUM(Total_amount), 0) FROM `order` ";
+        try (Connection conn = DBUtil.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getDouble(1);
+            }
+        }
+        return 0.0;
+    }
+
+    public double getLastMonthRevenue() throws SQLException {
+        String sql = "SELECT COALESCE(SUM(Total_amount), 0) FROM `order` " +
+                "WHERE status != 'Cancelled'";
+        try (Connection conn = DBUtil.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getDouble(1);
+            }
+        }
+        return 0.0;
+    }
+
+    public List<Order> getRecentOrders(int limit) throws SQLException {
+        List<Order> orders = new ArrayList<>();
+        String sql = "SELECT o.*, u.name as customer_name, u.email as customer_email " +
+                "FROM `order` o " +
+                "JOIN user u ON o.user_id = u.user_id " +
+                "ORDER BY o.Order_date DESC " +
+                "LIMIT ?";
+
+        try (Connection conn = DBUtil.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, limit);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                Order order = new Order();
+                order.setOrderId(rs.getInt("Order_ID"));
+                order.setOrderDate(rs.getTimestamp("Order_date"));
+                order.setTotalAmount(rs.getDouble("Total_amount"));
+                order.setStatus(rs.getString("status"));
+
+                User user = new User();
+                user.setName(rs.getString("customer_name"));
+                user.setEmail(rs.getString("customer_email"));
+                order.setUser(user);
+
+                orders.add(order);
+            }
+        }
+        return orders;
+    }
+
+    public List<Double> getMonthlyRevenue() throws SQLException {
+        List<Double> monthlyRevenue = new ArrayList<>();
+        String sql = "SELECT COALESCE(SUM(Total_amount), 0) as revenue " +
+                "FROM `order` ";
+
+        try (Connection conn = DBUtil.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                monthlyRevenue.add(rs.getDouble("revenue"));
+            }
+        }
+        return monthlyRevenue;
     }
 }

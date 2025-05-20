@@ -274,4 +274,16 @@ public class UserDAO {
         }
         return 0;
     }
+
+    public int getNewUsersThisMonth() throws SQLException {
+        String sql = "SELECT COUNT(*) FROM user";
+        try (Connection conn = DBUtil.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        }
+        return 0;
+    }
 }

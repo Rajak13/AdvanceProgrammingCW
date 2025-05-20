@@ -139,28 +139,28 @@ const orderItemTemplate = `
 
 // Template for a single order
 const orderTemplate = `
-    <div class="order-header">
-        <div>
+                <div class="order-header">
+                    <div>
             <h2>Order #[[orderId]]</h2>
             <p class="order-date">[[orderDate]]</p>
-        </div>
+                    </div>
         <span class="order-status status-[[status]]">[[status]]</span>
-    </div>
-    <div class="order-info">
-        <div class="info-group">
-            <h4>Shipping Address</h4>
+                </div>
+                <div class="order-info">
+                    <div class="info-group">
+                        <h4>Shipping Address</h4>
             <p>[[shippingAddress]]</p>
-        </div>
-        <div class="info-group">
-            <h4>Payment Method</h4>
+                    </div>
+                    <div class="info-group">
+                        <h4>Payment Method</h4>
             <p>[[paymentMethod]]</p>
-        </div>
-    </div>
-    <div class="order-items">
+                    </div>
+                </div>
+                <div class="order-items">
         [[itemsHtml]]
-    </div>
-    <div class="order-summary">
-        <div class="total-amount">
+                </div>
+                <div class="order-summary">
+                    <div class="total-amount">
             Total: NPR [[totalAmount]]
         </div>
     </div>

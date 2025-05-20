@@ -1,6 +1,7 @@
 package model;
 
 import java.io.Serializable;
+import java.util.List;
 
 public class Book implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -13,6 +14,7 @@ public class Book implements Serializable {
     private String status;
     private int stock;
     private String description;
+    private List<Category> categories;
 
     public Book() {
     }
@@ -90,5 +92,13 @@ public class Book implements Serializable {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public List<Category> getCategories() {
+        return categories;
+    }
+
+    public void setCategories(List<Category> categories) {
+        this.categories = categories;
     }
 }

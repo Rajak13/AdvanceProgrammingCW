@@ -51,6 +51,21 @@ public class BookServlet extends HttpServlet {
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        // --- Book JSON for admin modal edit ---
+        String bookIdParam = request.getParameter("bookId");
+        if (bookIdParam != null) {
+            try {
+                int bookId = Integer.parseInt(bookIdParam);
+                Book book = bookDAO.getBook(bookId);
+                response.setContentType("application/json");
+                response.getWriter().write(gson.toJson(book));
+            } catch (Exception e) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                response.getWriter().write("{\"error\":\"Invalid book ID\"}");
+            }
+            return;
+        }
+
         String action = request.getPathInfo();
         if (action == null) {
             action = "/list";

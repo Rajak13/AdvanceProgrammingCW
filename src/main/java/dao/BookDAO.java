@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 import model.Book;
+import model.Category;
 import utils.DBUtil;
 
 public class BookDAO {
@@ -99,7 +100,9 @@ public class BookDAO {
             stmt.setInt(1, bookId);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    return mapResultSetToBook(rs);
+                    Book book = mapResultSetToBook(rs);
+                    book.setCategories(getCategoriesForBook(book.getBookId()));
+                    return book;
                 }
             }
         }
@@ -135,7 +138,16 @@ public class BookDAO {
         try (PreparedStatement stmt = conn.prepareStatement(sql);
                 ResultSet rs = stmt.executeQuery()) {
             while (rs.next()) {
-                books.add(mapResultSetToBook(rs));
+                Book book = new Book();
+                book.setBookId(rs.getInt("Book_ID"));
+                book.setBookName(rs.getString("Book_name"));
+                book.setWriterName(rs.getString("writer_name"));
+                book.setPrice(rs.getDouble("price"));
+                book.setPicture(rs.getString("picture"));
+                book.setStatus(rs.getString("status"));
+                book.setStock(rs.getInt("stock"));
+                book.setDescription(rs.getString("description"));
+                books.add(book);
             }
         }
         return books;
@@ -306,7 +318,7 @@ public class BookDAO {
     }
 
     public boolean createBook(Book book, List<Integer> categoryIds) throws SQLException {
-        String sql = "INSERT INTO books (name, price, writer, image_url, status, stock, description) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO book (Book_name, price, writer_name, picture, status, stock, description) VALUES (?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement stmt = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
             stmt.setString(1, book.getBookName());
             stmt.setDouble(2, book.getPrice());
@@ -405,7 +417,9 @@ public class BookDAO {
 
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
-                    books.add(mapResultSetToBook(rs));
+                    Book book = mapResultSetToBook(rs);
+                    book.setCategories(getCategoriesForBook(book.getBookId()));
+                    books.add(book);
                 }
             }
         }
@@ -450,7 +464,9 @@ public class BookDAO {
 
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
-                    books.add(mapResultSetToBook(rs));
+                    Book book = mapResultSetToBook(rs);
+                    book.setCategories(getCategoriesForBook(book.getBookId()));
+                    books.add(book);
                 }
             }
         }
@@ -464,7 +480,9 @@ public class BookDAO {
             stmt.setInt(1, limit);
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
-                    books.add(mapResultSetToBook(rs));
+                    Book book = mapResultSetToBook(rs);
+                    book.setCategories(getCategoriesForBook(book.getBookId()));
+                    books.add(book);
                 }
             }
         }
@@ -478,7 +496,9 @@ public class BookDAO {
             stmt.setInt(1, limit);
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
-                    books.add(mapResultSetToBook(rs));
+                    Book book = mapResultSetToBook(rs);
+                    book.setCategories(getCategoriesForBook(book.getBookId()));
+                    books.add(book);
                 }
             }
         }
@@ -512,7 +532,9 @@ public class BookDAO {
 
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
-                    books.add(mapResultSetToBook(rs));
+                    Book book = mapResultSetToBook(rs);
+                    book.setCategories(getCategoriesForBook(book.getBookId()));
+                    books.add(book);
                 }
             }
         }
@@ -570,7 +592,9 @@ public class BookDAO {
 
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
-                    books.add(mapResultSetToBook(rs));
+                    Book book = mapResultSetToBook(rs);
+                    book.setCategories(getCategoriesForBook(book.getBookId()));
+                    books.add(book);
                 }
             }
         }
@@ -624,5 +648,65 @@ public class BookDAO {
             default:
                 return "ORDER BY b.Book_ID DESC ";
         }
+    }
+
+    private List<Category> getCategoriesForBook(int bookId) throws SQLException {
+        List<Category> categories = new ArrayList<>();
+        String sql = "SELECT c.Category_ID, c.category_name, c.description FROM category c " +
+                "JOIN book_category bc ON c.Category_ID = bc.Category_ID WHERE bc.Book_ID = ?";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, bookId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Category category = new Category();
+                    category.setId(rs.getInt("Category_ID"));
+                    category.setName(rs.getString("category_name"));
+                    category.setDescription(rs.getString("description"));
+                    categories.add(category);
+                }
+            }
+        }
+        return categories;
+    }
+
+    public int getNewBooksThisMonth() throws SQLException {
+        String sql = "SELECT COUNT(*) FROM book";
+        try (Connection conn = DBUtil.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        }
+        return 0;
+    }
+
+    public List<Book> getTopSellingBooks(int limit) throws SQLException {
+        List<Book> books = new ArrayList<>();
+        String sql = "SELECT b.*, COUNT(oi.book_id) as sales_count, SUM(oi.quantity * oi.price) as revenue " +
+                "FROM book b " +
+                "LEFT JOIN order_item oi ON b.Book_ID = oi.Book_ID " +
+                "GROUP BY b.Book_ID " +
+                "ORDER BY sales_count DESC " +
+                "LIMIT ?";
+
+        try (Connection conn = DBUtil.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, limit);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                Book book = new Book();
+                book.setBookId(rs.getInt("Book_ID"));
+                book.setBookName(rs.getString("Book_name"));
+                book.setWriterName(rs.getString("writer_name"));
+                book.setPrice(rs.getDouble("price"));
+                book.setPicture(rs.getString("picture"));
+                book.setStatus(rs.getString("status"));
+                book.setStock(rs.getInt("stock"));
+                book.setDescription(rs.getString("description"));
+                books.add(book);
+            }
+        }
+        return books;
     }
 }

@@ -67,36 +67,72 @@
             <h2>Meet Our Team</h2>
             <p>The passionate people behind Panna BookStore</p>
         </div>
-        <div class="team-grid">
-            <div class="team-member">
-                <div class="member-image">
-                    <img src="${pageContext.request.contextPath}/images/team/founder.jpg" alt="Panna Sharma">
+        <div class="team-slider">
+            <div class="team-slider-container">
+                <div class="team-member">
+                    <div class="member-image">
+                        <img src="https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&h=400&fit=crop&crop=faces&facepad=2.5" 
+                             alt="Razzaq Ansari"
+                             onerror="this.src='${pageContext.request.contextPath}/images/default-profile.png'">
+                    </div>
+                    <div class="member-info">
+                        <h3>Razzaq Ansari</h3>
+                        <p class="member-role">Founder & CEO</p>
+                        <p class="member-bio">A lifelong book lover with a vision to transform Nepal's reading culture.</p>
+                    </div>
                 </div>
-                <div class="member-info">
-                    <h3>Panna Sharma</h3>
-                    <p class="member-role">Founder & CEO</p>
-                    <p class="member-bio">A lifelong book lover with a vision to transform Nepal's reading culture.</p>
+                <div class="team-member">
+                    <div class="member-image">
+                        <img src="https://images.unsplash.com/photo-1556157382-97eda2d62296?w=400&h=400&fit=crop&crop=faces&facepad=2.5" 
+                             alt="Diamond Baruwal"
+                             onerror="this.src='${pageContext.request.contextPath}/images/default-profile.png'">
+                    </div>
+                    <div class="member-info">
+                        <h3>Diamond Baruwal</h3>
+                        <p class="member-role">Store Manager</p>
+                        <p class="member-bio">Ensures our bookstore provides an exceptional experience for all visitors.</p>
+                    </div>
+                </div>
+                <div class="team-member">
+                    <div class="member-image">
+                        <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=faces&facepad=2.5" 
+                             alt="Krish Adhikari"
+                             onerror="this.src='${pageContext.request.contextPath}/images/default-profile.png'">
+                    </div>
+                    <div class="member-info">
+                        <h3>Krish Adhikari</h3>
+                        <p class="member-role">Book Curator</p>
+                        <p class="member-bio">Our literary expert who carefully selects each book in our collection.</p>
+                    </div>
+                </div>
+                <div class="team-member">
+                    <div class="member-image">
+                        <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop&crop=faces&facepad=2.5" 
+                             alt="Nishant Shakya"
+                             onerror="this.src='${pageContext.request.contextPath}/images/default-profile.png'">
+                    </div>
+                    <div class="member-info">
+                        <h3>Nishant Shakya</h3>
+                        <p class="member-role">Marketing Director</p>
+                        <p class="member-bio">Bringing our brand to life through creative campaigns and community engagement.</p>
+                    </div>
+                </div>
+                <div class="team-member">
+                    <div class="member-image">
+                        <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&h=400&fit=crop&crop=faces&facepad=2.5" 
+                             alt="Saurab Basnet"
+                             onerror="this.src='${pageContext.request.contextPath}/images/default-profile.png'">
+                    </div>
+                    <div class="member-info">
+                        <h3>Saurab Basnet</h3>
+                        <p class="member-role">Technology Lead</p>
+                        <p class="member-bio">Building innovative digital solutions to enhance our customer experience.</p>
+                    </div>
                 </div>
             </div>
-            <div class="team-member">
-                <div class="member-image">
-                    <img src="${pageContext.request.contextPath}/images/team/manager.jpg" alt="Aarya Thapa">
-                </div>
-                <div class="member-info">
-                    <h3>Aarya Thapa</h3>
-                    <p class="member-role">Store Manager</p>
-                    <p class="member-bio">Ensures our bookstore provides an exceptional experience for all visitors.</p>
-                </div>
-            </div>
-            <div class="team-member">
-                <div class="member-image">
-                    <img src="${pageContext.request.contextPath}/images/team/curator.jpg" alt="Rohan Shrestha">
-                </div>
-                <div class="member-info">
-                    <h3>Rohan Shrestha</h3>
-                    <p class="member-role">Book Curator</p>
-                    <p class="member-bio">Our literary expert who carefully selects each book in our collection.</p>
-                </div>
+            <div class="team-controls">
+                <button class="slider-btn team-prev-btn" aria-label="Previous team member"><i class="fas fa-chevron-left"></i></button>
+                <button class="slider-btn team-next-btn" aria-label="Next team member"><i class="fas fa-chevron-right"></i></button>
             </div>
         </div>
     </div>
@@ -117,7 +153,7 @@
                 </div>
                 <div class="testimonial-author">
                     <div class="author-image">
-                        <img src="${pageContext.request.contextPath}/images/testimonials/customer1.jpg" alt="Anita Gurung">
+                        <img src="https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=200&h=200&auto=format&q=80" alt="Anita Gurung">
                     </div>
                     <div class="author-info">
                         <h4>Anita Gurung</h4>
@@ -132,7 +168,7 @@
                 </div>
                 <div class="testimonial-author">
                     <div class="author-image">
-                        <img src="${pageContext.request.contextPath}/images/testimonials/customer2.jpg" alt="Dipesh Rijal">
+                        <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=200&h=200&auto=format&q=80" alt="Dipesh Rijal">
                     </div>
                     <div class="author-info">
                         <h4>Dipesh Rijal</h4>
@@ -147,7 +183,7 @@
                 </div>
                 <div class="testimonial-author">
                     <div class="author-image">
-                        <img src="${pageContext.request.contextPath}/images/testimonials/customer3.jpg" alt="Priya Maharjan">
+                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&auto=format&q=80" alt="Priya Maharjan">
                     </div>
                     <div class="author-info">
                         <h4>Priya Maharjan</h4>
@@ -157,8 +193,6 @@
             </div>
         </div>
         <div class="testimonial-controls">
-            <button class="slider-btn testimonial-prev-btn"><i class="fas fa-chevron-left"></i></button>
-            <button class="slider-btn testimonial-next-btn"><i class="fas fa-chevron-right"></i></button>
         </div>
     </div>
 </section>
@@ -243,6 +277,149 @@
     .mission-card:hover {
         transform: translateY(-10px);
         box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+    }
+    
+    /* Team Section */
+    .team-section {
+        padding: 80px 0;
+        background-color: var(--white);
+        position: relative;
+    }
+    
+    .team-slider {
+        position: relative;
+        margin: 60px 0;
+        padding: 0 60px;
+        overflow: hidden;
+        max-width: 100%;
+        width: 100%;
+    }
+    
+    .team-slider-container {
+        display: flex;
+        gap: 30px;
+        padding: 20px 10px;
+        margin: 0 -15px;
+        overflow-x: auto;
+        scroll-behavior: smooth;
+        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none; /* IE and Edge */
+    }
+    
+    .team-slider-container::-webkit-scrollbar {
+        display: none; /* Chrome, Safari, Opera */
+    }
+    
+    .team-member {
+        flex: 0 0 270px;
+        background: white;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        margin: 0 5px;
+        opacity: 1;
+    }
+    
+    .team-member.loading {
+        opacity: 0.7;
+    }
+    
+    .member-image {
+        width: 100%;
+        height: 300px;
+        overflow: hidden;
+        border-radius: 10px 10px 0 0;
+        background-color: #f5f5f5;
+        position: relative;
+    }
+    
+    .member-image::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(45deg, #f1f1f1 25%, #f9f9f9 25%, #f9f9f9 50%, #f1f1f1 50%, #f1f1f1 75%, #f9f9f9 75%);
+        background-size: 20px 20px;
+        animation: shimmer 1s linear infinite;
+        opacity: 0.5;
+    }
+    
+    @keyframes shimmer {
+        0% { background-position: 0 0; }
+        100% { background-position: 40px 0; }
+    }
+    
+    .member-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: top center;
+        transition: transform 0.5s ease;
+        position: relative;
+        z-index: 1;
+    }
+    
+    .team-controls {
+        position: absolute;
+        top: 50%;
+        left: 0;
+        right: 0;
+        display: flex;
+        justify-content: space-between;
+        transform: translateY(-50%);
+        pointer-events: none;
+        z-index: 2;
+        padding: 0 15px;
+    }
+    
+    .slider-btn {
+        background: white;
+        border: none;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        transition: all 0.3s ease;
+        pointer-events: auto;
+        color: #333;
+        font-size: 18px;
+        position: relative;
+        z-index: 3;
+    }
+    
+    .slider-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none !important;
+    }
+    
+    .slider-btn:hover:not(:disabled) {
+        background: var(--primary-color);
+        color: white;
+        transform: scale(1.1);
+    }
+    
+    .team-prev-btn {
+        transform: translateX(-20px);
+    }
+    
+    .team-next-btn {
+        transform: translateX(20px);
+    }
+    
+    .team-prev-btn:hover {
+        transform: translateX(-25px) scale(1.1);
+    }
+    
+    .team-next-btn:hover {
+        transform: translateX(25px) scale(1.1);
     }
     
     .mission-icon {
@@ -393,32 +570,121 @@
         .about-banner h1 {
             font-size: 32px;
         }
+        
+        .team-slider {
+            padding: 0 40px;
+        }
+        
+        .team-slider-container {
+            gap: 20px;
+        }
+        
+        .team-member {
+            flex: 0 0 240px;
+        }
+        
+        .member-image {
+            height: 260px;
+        }
+        
+        .slider-btn {
+            width: 40px;
+            height: 40px;
+            font-size: 16px;
+        }
     }
 </style>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Testimonials Slider
-        const slider = document.querySelector('.testimonials-slider');
-        const prevBtn = document.querySelector('.testimonial-prev-btn');
-        const nextBtn = document.querySelector('.testimonial-next-btn');
+document.addEventListener('DOMContentLoaded', function() {
+    // Team Slider Elements
+    const teamSlider = document.querySelector('.team-slider-container');
+    const teamPrevBtn = document.querySelector('.team-prev-btn');
+    const teamNextBtn = document.querySelector('.team-next-btn');
+    
+    if (teamSlider && teamPrevBtn && teamNextBtn) {
+        const cardWidth = 270; // Width of each team member card
+        const gap = 30; // Gap between cards
+        const scrollAmount = cardWidth + gap;
         
-        if (slider && prevBtn && nextBtn) {
-            const cardWidth = 380; // Testimonial width + gap
-            
-            prevBtn.addEventListener('click', function() {
-                slider.scrollBy({
-                    left: -cardWidth,
-                    behavior: 'smooth'
-                });
+        // Handle previous button click
+        teamPrevBtn.addEventListener('click', function() {
+            teamSlider.scrollBy({
+                left: -scrollAmount,
+                behavior: 'smooth'
             });
-            
-            nextBtn.addEventListener('click', function() {
-                slider.scrollBy({
-                    left: cardWidth,
-                    behavior: 'smooth'
-                });
+        });
+        
+        // Handle next button click
+        teamNextBtn.addEventListener('click', function() {
+            teamSlider.scrollBy({
+                left: scrollAmount,
+                behavior: 'smooth'
             });
+        });
+        
+        // Update button states based on scroll position
+        function updateButtonStates() {
+            const maxScroll = teamSlider.scrollWidth - teamSlider.clientWidth;
+            teamPrevBtn.disabled = teamSlider.scrollLeft <= 0;
+            teamNextBtn.disabled = teamSlider.scrollLeft >= maxScroll;
         }
+        
+        // Update button states on scroll
+        teamSlider.addEventListener('scroll', updateButtonStates);
+        
+        // Initial button state update
+        updateButtonStates();
+        
+        // Auto advance
+        let autoAdvanceInterval;
+        
+        function startAutoAdvance() {
+            autoAdvanceInterval = setInterval(() => {
+                if (teamSlider.scrollLeft >= teamSlider.scrollWidth - teamSlider.clientWidth) {
+                    // If at the end, scroll back to start
+                    teamSlider.scrollTo({
+                        left: 0,
+                        behavior: 'smooth'
+                    });
+                } else {
+                    teamSlider.scrollBy({
+                        left: scrollAmount,
+                        behavior: 'smooth'
+                    });
+                }
+            }, 5000);
+        }
+        
+        function pauseAutoAdvance() {
+            clearInterval(autoAdvanceInterval);
+        }
+        
+        // Start auto advance
+        startAutoAdvance();
+        
+        // Pause on hover
+        teamSlider.addEventListener('mouseenter', pauseAutoAdvance);
+        teamSlider.addEventListener('mouseleave', startAutoAdvance);
+        
+        // Handle window resize
+        window.addEventListener('resize', updateButtonStates);
+    }
+
+    // Handle image loading
+    const memberImages = document.querySelectorAll('.member-image img');
+    memberImages.forEach(img => {
+        const memberCard = img.closest('.team-member');
+        memberCard.classList.add('loading');
+        
+        img.onload = () => {
+            memberCard.classList.remove('loading');
+        };
+        
+        img.onerror = () => {
+            memberCard.classList.remove('loading');
+            img.src = '${pageContext.request.contextPath}/images/default-profile.png';
+        };
     });
-</script> 
+});
+</script>

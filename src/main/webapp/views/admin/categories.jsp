@@ -162,19 +162,17 @@
                                 <tr>
                                     <td>
                                         <div class="category-item">
-                                            <i class="fas ${category.icon}"></i>
+                                            <i class="fas fa-tag"></i>
                                             <div class="category-info">
                                                 <h4>${category.name}</h4>
-                                                <p>Created: ${category.createdDate}</p>
+                                                <p>${category.description}</p>
                                             </div>
                                         </div>
                                     </td>
                                     <td>${category.description}</td>
-                                    <td>${category.bookCount}</td>
+                                    <td>0</td>
                                     <td>
-                                        <span class="status-badge ${category.status == 'Active' ? 'active' : 'inactive'}">
-                                            ${category.status}
-                                        </span>
+                                        <span class="status-badge inactive">N/A</span>
                                     </td>
                                     <td>
                                         <div class="action-buttons">

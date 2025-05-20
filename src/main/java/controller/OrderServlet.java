@@ -46,6 +46,21 @@ public class OrderServlet extends HttpServlet {
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        // --- Order JSON for admin modal/details ---
+        String orderIdParam = request.getParameter("orderId");
+        if (orderIdParam != null) {
+            try {
+                int orderId = Integer.parseInt(orderIdParam);
+                Order order = orderDAO.getOrder(orderId);
+                response.setContentType("application/json");
+                response.getWriter().write(gson.toJson(order));
+            } catch (Exception e) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                response.getWriter().write("{\"error\":\"Invalid order ID\"}");
+            }
+            return;
+        }
+
         String action = request.getPathInfo();
         if (action == null) {
             action = "/list";
@@ -74,8 +89,69 @@ public class OrderServlet extends HttpServlet {
         }
     }
 
+    @Override
+    protected void doDelete(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        response.setContentType("application/json");
+        response.setHeader("Access-Control-Allow-Origin", "*");
+        response.setHeader("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS");
+        response.setHeader("Access-Control-Allow-Headers", "Content-Type, Accept");
+
+        String orderIdParam = request.getParameter("orderId");
+        try {
+            if (orderIdParam == null || orderIdParam.trim().isEmpty()) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                response.getWriter().write("{\"success\":false,\"error\":\"Order ID is required\"}");
+                return;
+            }
+            int orderId = Integer.parseInt(orderIdParam);
+            boolean success = orderDAO.deleteOrder(orderId);
+            if (success) {
+                response.getWriter().write("{\"success\":true,\"message\":\"Order deleted successfully\"}");
+            } else {
+                response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                response.getWriter().write("{\"success\":false,\"error\":\"Order not found or could not be deleted\"}");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.getWriter()
+                    .write("{\"success\":false,\"error\":\"Error deleting order: " + e.getMessage() + "\"}");
+        }
+    }
+
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        response.setContentType("application/json");
+        response.setHeader("Access-Control-Allow-Origin", "*");
+        response.setHeader("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS");
+        response.setHeader("Access-Control-Allow-Headers", "Content-Type, Accept");
+
+        // Handle order status update
+        String orderIdParam = request.getParameter("orderId");
+        String orderStatus = request.getParameter("orderStatus");
+        String status = request.getParameter("status");
+        if (orderIdParam != null && (orderStatus != null || status != null)) {
+            try {
+                int orderId = Integer.parseInt(orderIdParam);
+                String newStatus = orderStatus != null ? orderStatus : status;
+                boolean success = orderDAO.updateOrderStatus(orderId, newStatus);
+                if (success) {
+                    response.getWriter().write("{\"success\":true,\"message\":\"Order status updated successfully\"}");
+                } else {
+                    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                    response.getWriter().write("{\"success\":false,\"error\":\"Failed to update order status\"}");
+                }
+                return;
+            } catch (Exception e) {
+                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                response.getWriter()
+                        .write("{\"success\":false,\"error\":\"Error updating order status: " + e.getMessage() + "\"}");
+                return;
+            }
+        }
+
+        // Handle other POST requests
         String action = request.getPathInfo();
         if (action == null) {
             action = "/create";
@@ -87,12 +163,22 @@ public class OrderServlet extends HttpServlet {
                     createOrder(request, response);
                     break;
                 default:
-                    response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                    response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                    response.getWriter().write("{\"success\":false,\"error\":\"Invalid action\"}");
                     break;
             }
         } catch (SQLException e) {
             throw new ServletException(e);
         }
+    }
+
+    @Override
+    protected void doOptions(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        response.setHeader("Access-Control-Allow-Origin", "*");
+        response.setHeader("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS");
+        response.setHeader("Access-Control-Allow-Headers", "Content-Type, Accept");
+        response.setStatus(HttpServletResponse.SC_OK);
     }
 
     private void listOrders(HttpServletRequest request, HttpServletResponse response)
