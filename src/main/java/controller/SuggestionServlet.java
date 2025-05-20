@@ -22,138 +22,147 @@ public class SuggestionServlet extends HttpServlet {
         suggestionDAO = new SuggestionDAO();
     }
 
+    @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        String action = request.getPathInfo();
-        if (action == null) {
-            action = "/list";
-        }
+        String pathInfo = request.getPathInfo();
 
-        HttpSession session = request.getSession();
-        User user = (User) session.getAttribute("user");
-        if (user == null) {
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
-            return;
-        }
-
-        try {
-            switch (action) {
-                case "/list":
-                    if ("admin".equals(user.getRole())) {
-                        listAllSuggestions(request, response);
-                    } else {
-                        listUserSuggestions(request, response, user.getUserId());
-                    }
-                    break;
-                case "/view":
-                    viewSuggestion(request, response);
-                    break;
-                default:
-                    response.sendError(HttpServletResponse.SC_NOT_FOUND);
-                    break;
+        if (pathInfo == null || pathInfo.equals("/")) {
+            // Show suggestion form
+            request.setAttribute("pageTitle", "Suggest a Book");
+            request.setAttribute("currentPage", "suggest");
+            request.setAttribute("mainContent", "/views/pages/suggest.jsp");
+            request.getRequestDispatcher("/views/common/page_template.jsp").forward(request, response);
+        } else if (pathInfo.matches("/\\d+")) {
+            // Get suggestion details for admin
+            HttpSession session = request.getSession();
+            User user = (User) session.getAttribute("user");
+            if (user == null || !"ADMIN".equals(user.getRole())) {
+                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access denied");
+                return;
             }
-        } catch (SQLException e) {
-            throw new ServletException(e);
+
+            try {
+                int suggestionId = Integer.parseInt(pathInfo.substring(1));
+                SuggestionBook suggestion = suggestionDAO.getSuggestion(suggestionId);
+                if (suggestion != null) {
+                    response.setContentType("application/json");
+                    response.setCharacterEncoding("UTF-8");
+                    response.getWriter().write(new com.google.gson.Gson().toJson(suggestion));
+                } else {
+                    response.sendError(HttpServletResponse.SC_NOT_FOUND, "Suggestion not found");
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error loading suggestion details");
+            }
+        } else {
+            response.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
     }
 
+    @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        String action = request.getPathInfo();
-        if (action == null) {
-            action = "/create";
-        }
+        String pathInfo = request.getPathInfo();
 
-        HttpSession session = request.getSession();
-        User user = (User) session.getAttribute("user");
-        if (user == null) {
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+        if (pathInfo == null || pathInfo.equals("/")) {
+            // Handle new suggestion submission
+            handleNewSuggestion(request, response);
+        } else if (pathInfo.equals("/update")) {
+            // Handle status update
+            handleStatusUpdate(request, response);
+        } else {
+            response.sendError(HttpServletResponse.SC_NOT_FOUND);
+        }
+    }
+
+    private void handleNewSuggestion(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        // Get form parameters
+        String suggestedBook = request.getParameter("suggestedBook");
+        String writer = request.getParameter("writer");
+        String category = request.getParameter("category");
+        String description = request.getParameter("description");
+
+        // Validate required fields
+        if (suggestedBook == null || suggestedBook.trim().isEmpty()) {
+            request.setAttribute("errorMessage", "Book title is required.");
+            request.setAttribute("pageTitle", "Suggest a Book");
+            request.setAttribute("currentPage", "suggest");
+            request.setAttribute("mainContent", "/views/pages/suggest.jsp");
+            request.getRequestDispatcher("/views/common/page_template.jsp").forward(request, response);
             return;
         }
 
         try {
-            switch (action) {
-                case "/create":
-                    createSuggestion(request, response, user.getUserId());
-                    break;
-                case "/update":
-                    if ("admin".equals(user.getRole())) {
-                        updateSuggestion(request, response);
-                    } else {
-                        response.sendError(HttpServletResponse.SC_FORBIDDEN);
-                    }
-                    break;
-                default:
-                    response.sendError(HttpServletResponse.SC_NOT_FOUND);
-                    break;
+            // Create new suggestion
+            SuggestionBook suggestion = new SuggestionBook();
+            suggestion.setTitle(suggestedBook);
+            suggestion.setAuthor(writer);
+            suggestion.setCategory(category);
+            suggestion.setDescription(description);
+            suggestion.setStatus("Pending"); // Set initial status
+
+            // Get user ID if logged in, otherwise set to 0 for anonymous suggestions
+            HttpSession session = request.getSession();
+            User user = (User) session.getAttribute("user");
+            if (user != null) {
+                suggestion.setUserId(user.getUserId());
+            } else {
+                suggestion.setUserId(0); // Anonymous suggestion
+            }
+
+            if (suggestionDAO.createSuggestion(suggestion)) {
+                request.setAttribute("successMessage", "Thank you for your book suggestion! We'll review it soon.");
+            } else {
+                request.setAttribute("errorMessage",
+                        "Sorry, there was an error submitting your suggestion. Please try again later.");
             }
         } catch (SQLException e) {
-            throw new ServletException(e);
+            e.printStackTrace();
+            request.setAttribute("errorMessage",
+                    "Sorry, there was an error submitting your suggestion. Please try again later.");
         }
+
+        // Set attributes for the page template
+        request.setAttribute("pageTitle", "Suggest a Book");
+        request.setAttribute("currentPage", "suggest");
+        request.setAttribute("mainContent", "/views/pages/suggest.jsp");
+        request.getRequestDispatcher("/views/common/page_template.jsp").forward(request, response);
     }
 
-    private void listAllSuggestions(HttpServletRequest request, HttpServletResponse response)
-            throws SQLException, ServletException, IOException {
-        request.setAttribute("suggestions", suggestionDAO.getAllSuggestions());
-        request.getRequestDispatcher("/suggestions/list.jsp").forward(request, response);
-    }
-
-    private void listUserSuggestions(HttpServletRequest request, HttpServletResponse response, int userId)
-            throws SQLException, ServletException, IOException {
-        request.setAttribute("suggestions", suggestionDAO.getUserSuggestions(userId));
-        request.getRequestDispatcher("/suggestions/list.jsp").forward(request, response);
-    }
-
-    private void viewSuggestion(HttpServletRequest request, HttpServletResponse response)
-            throws SQLException, ServletException, IOException {
-        int suggestionId = Integer.parseInt(request.getParameter("id"));
-        SuggestionBook suggestion = suggestionDAO.getSuggestion(suggestionId);
-
-        if (suggestion == null) {
-            response.sendError(HttpServletResponse.SC_NOT_FOUND);
+    private void handleStatusUpdate(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        // Check if user is admin
+        HttpSession session = request.getSession();
+        User user = (User) session.getAttribute("user");
+        if (user == null || !"ADMIN".equals(user.getRole())) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access denied");
             return;
         }
 
-        request.setAttribute("suggestion", suggestion);
-        request.getRequestDispatcher("/suggestions/view.jsp").forward(request, response);
-    }
+        try {
+            int suggestionId = Integer.parseInt(request.getParameter("suggestionId"));
+            String status = request.getParameter("status");
 
-    private void createSuggestion(HttpServletRequest request, HttpServletResponse response, int userId)
-            throws SQLException, IOException {
-        String title = request.getParameter("title");
-        String author = request.getParameter("author");
-        String description = request.getParameter("description");
+            SuggestionBook suggestion = suggestionDAO.getSuggestion(suggestionId);
+            if (suggestion == null) {
+                response.sendError(HttpServletResponse.SC_NOT_FOUND, "Suggestion not found");
+                return;
+            }
 
-        SuggestionBook suggestion = new SuggestionBook();
-        suggestion.setUserId(userId);
-        suggestion.setTitle(title);
-        suggestion.setAuthor(author);
-        suggestion.setDescription(description);
-        suggestion.setStatus("pending");
-
-        if (suggestionDAO.createSuggestion(suggestion)) {
-            response.sendRedirect(request.getContextPath() + "/suggestions/list");
-        } else {
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to create suggestion");
-        }
-    }
-
-    private void updateSuggestion(HttpServletRequest request, HttpServletResponse response)
-            throws SQLException, IOException {
-        int suggestionId = Integer.parseInt(request.getParameter("id"));
-        String status = request.getParameter("status");
-
-        SuggestionBook suggestion = suggestionDAO.getSuggestion(suggestionId);
-        if (suggestion == null) {
-            response.sendError(HttpServletResponse.SC_NOT_FOUND);
-            return;
-        }
-
-        suggestion.setStatus(status);
-        if (suggestionDAO.updateSuggestion(suggestion)) {
-            response.sendRedirect(request.getContextPath() + "/suggestions/view?id=" + suggestionId);
-        } else {
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to update suggestion");
+            suggestion.setStatus(status);
+            if (suggestionDAO.updateSuggestion(suggestion)) {
+                response.setContentType("application/json");
+                response.setCharacterEncoding("UTF-8");
+                response.getWriter().write("{\"success\":true,\"message\":\"Status updated successfully\"}");
+            } else {
+                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to update suggestion status");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error updating suggestion");
         }
     }
 }

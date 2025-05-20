@@ -7,62 +7,71 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Profile - Panna BookStore</title>
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/home.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/admin.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="icon" type="image/x-icon" href="${pageContext.request.contextPath}/images/favicon.ico">
     <style>
-        .admin-container {
-            display: flex;
-            min-height: 100vh;
-            background: var(--light-bg);
-        }
-
-        .admin-sidebar {
-            width: 250px;
-            background: var(--primary-dark);
-            color: var(--white);
-            padding: 1rem;
-            position: fixed;
-            height: 100vh;
-            overflow-y: auto;
-        }
-
-        .admin-main {
-            flex: 1;
-            margin-left: 250px;
-            padding: 2rem;
-        }
-
         .profile-container {
             max-width: 1200px;
             margin: 0 auto;
+            padding: 2rem;
         }
 
         .profile-header {
-            background: var(--white);
-            padding: 2rem;
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--accent-color) 100%);
+            padding: 3rem 2rem;
             border-radius: var(--border-radius);
             box-shadow: var(--shadow);
             margin-bottom: 2rem;
             display: flex;
             align-items: center;
             gap: 2rem;
+            color: var(--white);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .profile-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('${pageContext.request.contextPath}/images/pattern.png');
+            opacity: 0.1;
+            z-index: 0;
         }
 
         .profile-avatar {
             position: relative;
-            width: 150px;
-            height: 150px;
+            width: 180px;
+            height: 180px;
             border-radius: 50%;
             overflow: hidden;
-            border: 3px solid var(--accent-color);
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+            z-index: 1;
+            background: var(--white);
         }
 
         .profile-avatar img {
             width: 100%;
             height: 100%;
             object-fit: cover;
+        }
+
+        .profile-initials {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            font-weight: 600;
+            color: var(--primary-dark);
+            background: var(--light-bg);
         }
 
         .change-avatar-btn {
@@ -72,34 +81,91 @@
             right: 0;
             background: rgba(0, 0, 0, 0.7);
             color: var(--white);
-            padding: 0.5rem;
+            padding: 0.75rem;
             text-align: center;
             cursor: pointer;
             transition: var(--transition);
+            backdrop-filter: blur(4px);
         }
 
         .change-avatar-btn:hover {
             background: var(--accent-color);
         }
 
+        .profile-info {
+            z-index: 1;
+            flex: 1;
+        }
+
         .profile-info h2 {
-            color: var(--primary-dark);
+            color: var(--white);
             margin-bottom: 0.5rem;
+            font-size: 2rem;
+            font-weight: 600;
         }
 
         .profile-info .role {
-            color: var(--accent-color);
+            color: rgba(255, 255, 255, 0.9);
             font-weight: 500;
             margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .profile-info .role i {
+            color: var(--accent-color);
         }
 
         .profile-info .email {
+            color: rgba(255, 255, 255, 0.8);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .profile-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--white);
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            text-align: center;
+            transition: var(--transition);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-card i {
+            font-size: 2rem;
+            color: var(--accent-color);
+            margin-bottom: 1rem;
+        }
+
+        .stat-card h3 {
+            color: var(--primary-dark);
+            margin-bottom: 0.5rem;
+            font-size: 1.5rem;
+        }
+
+        .stat-card p {
             color: var(--light-text);
+            font-size: 0.9rem;
         }
 
         .profile-sections {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
             gap: 2rem;
         }
 
@@ -108,6 +174,11 @@
             padding: 2rem;
             border-radius: var(--border-radius);
             box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+
+        .profile-section:hover {
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
         }
 
         .profile-section h3 {
@@ -115,6 +186,13 @@
             margin-bottom: 1.5rem;
             padding-bottom: 0.5rem;
             border-bottom: 2px solid var(--accent-color);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .profile-section h3 i {
+            color: var(--accent-color);
         }
 
         .form-group {
@@ -134,6 +212,7 @@
             border: 1px solid #ddd;
             border-radius: var(--border-radius);
             transition: var(--transition);
+            font-size: 1rem;
         }
 
         .form-control:focus {
@@ -142,11 +221,56 @@
             outline: none;
         }
 
+        .form-control:disabled {
+            background: var(--light-bg);
+            cursor: not-allowed;
+        }
+
         .checkbox-label {
             display: flex;
             align-items: center;
             gap: 0.5rem;
             cursor: pointer;
+            user-select: none;
+        }
+
+        .checkbox-label input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--accent-color);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: var(--border-radius);
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background: var(--accent-color);
+            color: var(--white);
+        }
+
+        .btn-primary:hover {
+            background: #E64A19;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: var(--primary-dark);
+            color: var(--white);
+        }
+
+        .btn-secondary:hover {
+            background: #1A237E;
+            transform: translateY(-2px);
         }
 
         .notification {
@@ -159,6 +283,9 @@
             font-weight: 500;
             z-index: 1000;
             animation: slideIn 0.3s ease-out;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
         .notification.success {
@@ -180,84 +307,61 @@
             }
         }
 
-        .btn {
-            display: inline-block;
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: var(--border-radius);
-            font-weight: 500;
-            cursor: pointer;
-            transition: var(--transition);
+        .activity-timeline {
+            margin-top: 1rem;
         }
 
-        .btn-primary {
+        .timeline-item {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem 0;
+            border-left: 2px solid var(--accent-color);
+            margin-left: 1rem;
+            position: relative;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -0.5rem;
+            width: 1rem;
+            height: 1rem;
+            border-radius: 50%;
             background: var(--accent-color);
-            color: var(--white);
         }
 
-        .btn-primary:hover {
-            background: #E64A19;
-            transform: translateY(-2px);
+        .timeline-item:last-child {
+            border-left: none;
+        }
+
+        .timeline-content {
+            flex: 1;
+        }
+
+        .timeline-content h4 {
+            color: var(--primary-dark);
+            margin-bottom: 0.25rem;
+        }
+
+        .timeline-content p {
+            color: var(--light-text);
+            font-size: 0.9rem;
+        }
+
+        .timeline-date {
+            color: var(--accent-color);
+            font-size: 0.8rem;
+            font-weight: 500;
         }
     </style>
 </head>
 <body>
     <div class="admin-container">
-        <!-- Sidebar -->
-        <aside class="admin-sidebar">
-            <div class="sidebar-header">
-                <h2>Panna BookStore</h2>
-            </div>
-            <nav class="sidebar-nav">
-                <ul>
-                    <li>
-                        <a href="${pageContext.request.contextPath}/admin/dashboard">
-                            <i class="fas fa-home"></i>
-                            <span>Dashboard</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="${pageContext.request.contextPath}/admin/books">
-                            <i class="fas fa-book"></i>
-                            <span>Books</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="${pageContext.request.contextPath}/admin/categories">
-                            <i class="fas fa-tags"></i>
-                            <span>Categories</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="${pageContext.request.contextPath}/orders">
-                            <i class="fas fa-shopping-bag"></i>
-                            <span>Orders</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="${pageContext.request.contextPath}/admin/users">
-                            <i class="fas fa-users"></i>
-                            <span>Users</span>
-                        </a>
-                    </li>
-                    <li class="active">
-                        <a href="${pageContext.request.contextPath}/admin/profile">
-                            <i class="fas fa-user"></i>
-                            <span>Profile</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="${pageContext.request.contextPath}/admin/settings">
-                            <i class="fas fa-cog"></i>
-                            <span>Settings</span>
-                        </a>
-                    </li>
-                </ul>
-            </nav>
-        </aside>
-
-        <!-- Main Content -->
+        <jsp:include page="common/sidebar.jsp" />
+        
         <main class="admin-main">
+            <jsp:include page="common/header.jsp" />
+            
             <div class="profile-container">
                 <div class="profile-header">
                     <div class="profile-avatar">
@@ -275,15 +379,44 @@
                     </div>
                     <div class="profile-info">
                         <h2>${sessionScope.user.name}</h2>
-                        <p class="role">${sessionScope.user.role}</p>
-                        <p class="email">${sessionScope.user.email}</p>
+                        <p class="role">
+                            <i class="fas fa-shield-alt"></i>
+                            ${sessionScope.user.role}
+                        </p>
+                        <p class="email">
+                            <i class="fas fa-envelope"></i>
+                            ${sessionScope.user.email}
+                        </p>
+                    </div>
+                </div>
+
+                <div class="profile-stats">
+                    <div class="stat-card">
+                        <i class="fas fa-book"></i>
+                        <h3>${totalBooks}</h3>
+                        <p>Total Books</p>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-users"></i>
+                        <h3>${totalUsers}</h3>
+                        <p>Total Users</p>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-shopping-cart"></i>
+                        <h3>${totalOrders}</h3>
+                        <p>Total Orders</p>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-dollar-sign"></i>
+                        <h3>$${totalRevenue}</h3>
+                        <p>Total Revenue</p>
                     </div>
                 </div>
 
                 <div class="profile-sections">
                     <!-- Personal Information -->
                     <section class="profile-section">
-                        <h3>Personal Information</h3>
+                        <h3><i class="fas fa-user"></i> Personal Information</h3>
                         <form id="personalInfoForm" class="profile-form" action="${pageContext.request.contextPath}/profile" method="post" enctype="multipart/form-data">
                             <input type="file" id="picture" name="picture" accept="image/*" style="display: none;">
                             
@@ -307,13 +440,15 @@
                                 <textarea id="address" name="address" class="form-control" rows="3">${sessionScope.user.address}</textarea>
                             </div>
                             
-                            <button type="submit" class="btn btn-primary">Update Information</button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Update Information
+                            </button>
                         </form>
                     </section>
 
                     <!-- Change Password -->
                     <section class="profile-section">
-                        <h3>Change Password</h3>
+                        <h3><i class="fas fa-lock"></i> Change Password</h3>
                         <form id="passwordForm" class="profile-form" action="${pageContext.request.contextPath}/users/change-password" method="post">
                             <div class="form-group">
                                 <label for="currentPassword">Current Password</label>
@@ -330,37 +465,38 @@
                                 <input type="password" id="confirmPassword" name="confirmPassword" class="form-control" required>
                             </div>
                             
-                            <button type="submit" class="btn btn-primary">Change Password</button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-key"></i> Change Password
+                            </button>
                         </form>
                     </section>
 
-                    <!-- Notification Preferences -->
+                    <!-- Recent Activity -->
                     <section class="profile-section">
-                        <h3>Notification Preferences</h3>
-                        <form id="notificationForm" class="profile-form">
-                            <div class="form-group">
-                                <label class="checkbox-label">
-                                    <input type="checkbox" name="emailNotifications" checked>
-                                    Email Notifications
-                                </label>
+                        <h3><i class="fas fa-history"></i> Recent Activity</h3>
+                        <div class="activity-timeline">
+                            <div class="timeline-item">
+                                <div class="timeline-content">
+                                    <h4>Profile Updated</h4>
+                                    <p>Your profile information was updated</p>
+                                    <span class="timeline-date">Today, 10:30 AM</span>
+                                </div>
                             </div>
-                            
-                            <div class="form-group">
-                                <label class="checkbox-label">
-                                    <input type="checkbox" name="orderUpdates" checked>
-                                    Order Updates
-                                </label>
+                            <div class="timeline-item">
+                                <div class="timeline-content">
+                                    <h4>Password Changed</h4>
+                                    <p>Your password was successfully changed</p>
+                                    <span class="timeline-date">Yesterday, 3:45 PM</span>
+                                </div>
                             </div>
-                            
-                            <div class="form-group">
-                                <label class="checkbox-label">
-                                    <input type="checkbox" name="marketingEmails">
-                                    Marketing Emails
-                                </label>
+                            <div class="timeline-item">
+                                <div class="timeline-content">
+                                    <h4>New Login</h4>
+                                    <p>You logged in from a new device</p>
+                                    <span class="timeline-date">May 18, 2024</span>
+                                </div>
                             </div>
-                            
-                            <button type="submit" class="btn btn-primary">Save Preferences</button>
-                        </form>
+                        </div>
                     </section>
                 </div>
             </div>
@@ -444,17 +580,14 @@
             });
         });
 
-        document.getElementById('notificationForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            // Add your notification preferences update logic here
-            showNotification('Notification preferences updated successfully', 'success');
-        });
-
         // Notification function
         function showNotification(message, type) {
             const notification = document.createElement('div');
             notification.className = `notification ${type}`;
-            notification.textContent = message;
+            notification.innerHTML = `
+                <i class="fas fa-${type == 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+                ${message}
+            `;
             document.body.appendChild(notification);
             
             setTimeout(() => {

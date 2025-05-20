@@ -140,54 +140,12 @@
     </div>
 </section>
 
-<!-- Book Suggestion Section -->
-<section class="suggestion-section">
+<section class="suggestion-link-section">
     <div class="container">
-        <div class="section-header">
-            <h2>Book Suggestion</h2>
-            <p>Let us know what books you'd like to see in our store</p>
-        </div>
-        <div class="suggestion-form-container">
-            <form class="suggestion-form" action="${pageContext.request.contextPath}/suggest-book" method="post">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="book-title">Book Title <span class="required">*</span></label>
-                        <input type="text" id="book-title" name="suggestedBook" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="author">Author</label>
-                        <input type="text" id="author" name="writer">
-                    </div>
-                </div>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="book-category">Category</label>
-                        <select id="book-category" name="category">
-                            <option value="">Select Category</option>
-                            <option value="Fiction">Fiction</option>
-                            <option value="Non-Fiction">Non-Fiction</option>
-                            <option value="Children">Children's Books</option>
-                            <option value="Textbooks">Textbooks</option>
-                            <option value="Nepali">Nepali Literature</option>
-                            <option value="Other">Other</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="email-address">Your Email <span class="required">*</span></label>
-                        <input type="email" id="email-address" name="email" required>
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="book-description">Description</label>
-                    <textarea id="book-description" name="description" rows="3"></textarea>
-                </div>
-                
-                <button type="submit" class="btn btn-primary">Submit Suggestion</button>
-            </form>
+        <div class="suggestion-link-content">
+            <h2>Want to Suggest a Book?</h2>
+            <p>Help us grow our collection by suggesting books you'd like to see in our store</p>
+            <a href="${pageContext.request.contextPath}/suggest-book" class="btn btn-primary">Suggest a Book</a>
         </div>
     </div>
 </section>
@@ -407,7 +365,30 @@
         margin-right: 10px;
         font-size: 16px;
     }
+    .suggestion-link-section {
+        padding: 60px 0;
+        background-color: var(--light-bg);
+        text-align: center;
+    }
+    .suggestion-link-content h2 {
+        color: var(--primary-dark);
+        margin-bottom: 15px;
+    }
     
+    .suggestion-link-content p {
+        margin-bottom: 25px;
+        color: var(--text-color);
+    }
+    
+    .suggestion-link-content .btn {
+        display: inline-block;
+        padding: 12px 30px;
+        font-size: 16px;
+    }
+    .suggestion-link-content {
+        max-width: 600px;
+        margin: 0 auto;
+    }
     @media (max-width: 768px) {
         .contact-container {
             grid-template-columns: 1fr;

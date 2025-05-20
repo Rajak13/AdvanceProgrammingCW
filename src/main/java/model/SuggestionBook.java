@@ -7,6 +7,7 @@ public class SuggestionBook {
     private int userId;
     private String title;
     private String author;
+    private String category;
     private String description;
     private String status;
     private Timestamp date;
@@ -46,6 +47,14 @@ public class SuggestionBook {
         this.author = author;
     }
 
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
     public String getDescription() {
         return description;
     }
@@ -72,7 +81,8 @@ public class SuggestionBook {
 
     @Override
     public String toString() {
-        return "SuggestionBook [suggestionId=" + suggestionId + ", userId=" + userId + ", title=" + title + ", author="
-                + author + ", description=" + description + ", status=" + status + ", date=" + date + "]";
+        return "SuggestionBook [suggestionId=" + suggestionId + ", userId=" + userId + ", title=" + title 
+            + ", author=" + author + ", category=" + category + ", description=" + description 
+            + ", status=" + status + ", date=" + date + "]";
     }
 }

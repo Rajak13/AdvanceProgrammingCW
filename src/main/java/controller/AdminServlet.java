@@ -99,14 +99,23 @@ public class AdminServlet extends HttpServlet {
                 case "/orders":
                     listOrders(request, response);
                     break;
+                case "/suggestions":
+                    listSuggestions(request, response);
+                    break;
                 case "/users":
                     listUsers(request, response);
                     break;
                 case "/profile":
+                    // Get the current admin user's details
+                    User adminUser = (User) session.getAttribute("user");
+                    if (adminUser != null) {
+                        // Get updated user data from database
+                        User updatedUser = userDAO.getUserById(adminUser.getUserId());
+                        if (updatedUser != null) {
+                            session.setAttribute("user", updatedUser);
+                        }
+                    }
                     request.getRequestDispatcher("/views/admin/profile.jsp").forward(request, response);
-                    break;
-                case "/settings":
-                    request.getRequestDispatcher("/views/admin/settings.jsp").forward(request, response);
                     break;
                 default:
                     response.sendError(HttpServletResponse.SC_NOT_FOUND);

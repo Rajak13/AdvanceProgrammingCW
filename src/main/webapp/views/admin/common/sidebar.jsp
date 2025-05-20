@@ -43,10 +43,10 @@
                     <span>Profile</span>
                 </a>
             </li>
-            <li class="${pageContext.request.servletPath == '/views/admin/settings.jsp' ? 'active' : ''}">
-                <a href="${pageContext.request.contextPath}/admin/settings">
-                    <i class="fas fa-cog"></i>
-                    <span>Settings</span>
+            <li class="${pageContext.request.servletPath == '/views/admin/suggestions.jsp' ? 'active' : ''}">
+                <a href="${pageContext.request.contextPath}/admin/suggestions">
+                    <i class="fas fa-lightbulb"></i>
+                    <span>Suggestions</span>
                 </a>
             </li>
         </ul>

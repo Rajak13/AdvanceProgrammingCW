@@ -56,20 +56,6 @@
                 <div class="table-container">
                     <div class="table-header">
                         <h3>Books Management</h3>
-                        <div class="table-actions">
-                            <div class="filters">
-                                <select class="form-control">
-                                    <option value="">All Categories</option>
-                                    <c:forEach var="category" items="${categories}">
-                                        <option value="${category.id}">${category.name}</option>
-                                    </c:forEach>
-                                </select>
-                                <select class="form-control">
-                                    <option value="">Status</option>
-                                    <option value="active">Active</option>
-                                    <option value="inactive">Inactive</option>
-                                </select>
-                            </div>
                             <button class="btn btn-primary" id="addBookBtn">
                                 <i class="fas fa-plus"></i> Add New Book
                             </button>
@@ -80,7 +66,6 @@
                             <tr>
                                 <th>Book</th>
                                 <th>Author</th>
-                                <th>Category</th>
                                 <th>Price</th>
                                 <th>Stock</th>
                                 <th>Status</th>
@@ -99,11 +84,6 @@
                                         </div>
                                     </td>
                                     <td>${book.writerName}</td>
-                                    <td>
-                                        <c:forEach var="category" items="${book.categories}">
-                                            <span class="category-badge">${category.name}</span>
-                                        </c:forEach>
-                                    </td>
                                     <td>${book.price}</td>
                                     <td>${book.stock}</td>
                                     <td>
