@@ -11,7 +11,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import model.User;
-import utils.PasswordUtil;
 
 @WebServlet("/auth/*")
 public class AuthServlet extends HttpServlet {
@@ -28,8 +27,18 @@ public class AuthServlet extends HttpServlet {
             throws ServletException, IOException {
         String action = request.getPathInfo();
 
+        // Get or create session
+        HttpSession session = request.getSession(true);
+
+        // Check if user is already logged in
+        if (session.getAttribute("user") != null) {
+            response.sendRedirect(request.getContextPath() + "/home");
+            return;
+        }
+
         if (action == null) {
-            // Show the combined auth page
+            // Show the combined auth page with login panel active by default
+            request.setAttribute("activePanel", "login");
             request.getRequestDispatcher("/views/auth/auth.jsp").forward(request, response);
             return;
         }
@@ -79,23 +88,23 @@ public class AuthServlet extends HttpServlet {
 
     private void login(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        String username = request.getParameter("username");
+        String email = request.getParameter("email");
         String password = request.getParameter("password");
 
         try {
-            User user = userDAO.getUserByName(username);
+            User user = userDAO.authenticateUser(email, password);
 
-            if (user != null && PasswordUtil.checkPassword(password, user.getPassword())) {
+            if (user != null) {
                 HttpSession session = request.getSession();
                 session.setAttribute("user", user);
 
                 if (user.isAdmin()) {
-                    response.sendRedirect(request.getContextPath() + "/views/admin/dashboard.jsp");
+                    response.sendRedirect(request.getContextPath() + "/admin/dashboard");
                 } else {
-                    response.sendRedirect(request.getContextPath() + "/views/pages/home.jsp");
+                    response.sendRedirect(request.getContextPath() + "/home");
                 }
             } else {
-                request.setAttribute("errorMessage", "Invalid username or password");
+                request.setAttribute("errorMessage", "Invalid email or password");
                 request.setAttribute("activePanel", "login");
                 request.getRequestDispatcher("/views/auth/auth.jsp").forward(request, response);
             }
@@ -136,7 +145,7 @@ public class AuthServlet extends HttpServlet {
             User user = new User();
             user.setName(name);
             user.setEmail(email);
-            user.setPassword(PasswordUtil.hashPassword(password));
+            user.setPassword(password); // Will be hashed in UserDAO
             user.setContact(contact);
             user.setAddress(address);
             user.setRole("USER");
@@ -165,6 +174,6 @@ public class AuthServlet extends HttpServlet {
         if (session != null) {
             session.invalidate();
         }
-        response.sendRedirect(request.getContextPath() + "/views/pages/home.jsp");
+        response.sendRedirect(request.getContextPath() + "/auth/login");
     }
 }

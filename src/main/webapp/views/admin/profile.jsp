@@ -1,221 +1,468 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
-
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profile - Admin Dashboard</title>
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/admin.css">
+    <title>Admin Profile - Panna BookStore</title>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/home.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-</head>
+    <link rel="icon" type="image/x-icon" href="${pageContext.request.contextPath}/images/favicon.ico">
+    <style>
+        .admin-container {
+            display: flex;
+            min-height: 100vh;
+            background: var(--light-bg);
+        }
 
+        .admin-sidebar {
+            width: 250px;
+            background: var(--primary-dark);
+            color: var(--white);
+            padding: 1rem;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .admin-main {
+            flex: 1;
+            margin-left: 250px;
+            padding: 2rem;
+        }
+
+        .profile-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .profile-header {
+            background: var(--white);
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .profile-avatar {
+            position: relative;
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 3px solid var(--accent-color);
+        }
+
+        .profile-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .change-avatar-btn {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.7);
+            color: var(--white);
+            padding: 0.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .change-avatar-btn:hover {
+            background: var(--accent-color);
+        }
+
+        .profile-info h2 {
+            color: var(--primary-dark);
+            margin-bottom: 0.5rem;
+        }
+
+        .profile-info .role {
+            color: var(--accent-color);
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .profile-info .email {
+            color: var(--light-text);
+        }
+
+        .profile-sections {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .profile-section {
+            background: var(--white);
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+
+        .profile-section h3 {
+            color: var(--primary-dark);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--accent-color);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--primary-dark);
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            transition: var(--transition);
+        }
+
+        .form-control:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 2px rgba(255, 87, 34, 0.1);
+            outline: none;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem 2rem;
+            border-radius: var(--border-radius);
+            color: var(--white);
+            font-weight: 500;
+            z-index: 1000;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .notification.success {
+            background: #4CAF50;
+        }
+
+        .notification.error {
+            background: #f44336;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: var(--border-radius);
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .btn-primary {
+            background: var(--accent-color);
+            color: var(--white);
+        }
+
+        .btn-primary:hover {
+            background: #E64A19;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
 <body>
     <div class="admin-container">
         <!-- Sidebar -->
-        <aside class="sidebar">
+        <aside class="admin-sidebar">
             <div class="sidebar-header">
-                <h2>Admin Panel</h2>
+                <h2>Panna BookStore</h2>
             </div>
             <nav class="sidebar-nav">
-                <a href="${pageContext.request.contextPath}/admin/dashboard" class="nav-item">
-                    <i class="fas fa-home"></i> Dashboard
-                </a>
-                <a href="${pageContext.request.contextPath}/admin/books" class="nav-item">
-                    <i class="fas fa-book"></i> Books
-                </a>
-                <a href="${pageContext.request.contextPath}/admin/categories" class="nav-item">
-                    <i class="fas fa-tags"></i> Categories
-                </a>
-                <a href="${pageContext.request.contextPath}/admin/users" class="nav-item">
-                    <i class="fas fa-users"></i> Users
-                </a>
-                <a href="${pageContext.request.contextPath}/admin/orders" class="nav-item">
-                    <i class="fas fa-shopping-cart"></i> Orders
-                </a>
-                <a href="${pageContext.request.contextPath}/admin/profile" class="nav-item active">
-                    <i class="fas fa-user"></i> Profile
-                </a>
-                <a href="${pageContext.request.contextPath}/admin/settings" class="nav-item">
-                    <i class="fas fa-cog"></i> Settings
-                </a>
+                <ul>
+                    <li>
+                        <a href="${pageContext.request.contextPath}/admin/dashboard">
+                            <i class="fas fa-home"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="${pageContext.request.contextPath}/admin/books">
+                            <i class="fas fa-book"></i>
+                            <span>Books</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="${pageContext.request.contextPath}/admin/categories">
+                            <i class="fas fa-tags"></i>
+                            <span>Categories</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="${pageContext.request.contextPath}/orders">
+                            <i class="fas fa-shopping-bag"></i>
+                            <span>Orders</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="${pageContext.request.contextPath}/admin/users">
+                            <i class="fas fa-users"></i>
+                            <span>Users</span>
+                        </a>
+                    </li>
+                    <li class="active">
+                        <a href="${pageContext.request.contextPath}/admin/profile">
+                            <i class="fas fa-user"></i>
+                            <span>Profile</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="${pageContext.request.contextPath}/admin/settings">
+                            <i class="fas fa-cog"></i>
+                            <span>Settings</span>
+                        </a>
+                    </li>
+                </ul>
             </nav>
         </aside>
 
         <!-- Main Content -->
-        <main class="main-content">
-            <!-- Header -->
-            <header class="header">
-                <div class="header-left">
-                    <h1>Profile Settings</h1>
+        <main class="admin-main">
+            <div class="profile-container">
+                <div class="profile-header">
+                    <div class="profile-avatar">
+                        <c:choose>
+                            <c:when test="${not empty sessionScope.user.picture}">
+                                <img src="${pageContext.request.contextPath}/files/${sessionScope.user.picture}" alt="Profile Picture" id="profileImage">
+                            </c:when>
+                            <c:otherwise>
+                                <div class="profile-initials" id="profileInitials">${fn:toUpperCase(fn:substring(sessionScope.user.name, 0, 1))}</div>
+                            </c:otherwise>
+                        </c:choose>
+                        <label for="picture" class="change-avatar-btn">
+                            <i class="fas fa-camera"></i> Change Photo
+                        </label>
+                    </div>
+                    <div class="profile-info">
+                        <h2>${sessionScope.user.name}</h2>
+                        <p class="role">${sessionScope.user.role}</p>
+                        <p class="email">${sessionScope.user.email}</p>
+                    </div>
                 </div>
-                <div class="header-right">
-                    <div class="search-bar">
-                        <input type="text" placeholder="Search...">
-                        <button><i class="fas fa-search"></i></button>
-                    </div>
-                    <div class="notifications">
-                        <i class="fas fa-bell"></i>
-                        <span class="badge">3</span>
-                    </div>
-                    <div class="user-menu">
-                        <img src="${pageContext.request.contextPath}/assets/images/admin-avatar.png" alt="Admin">
-                        <span>Admin</span>
-                    </div>
-                </div>
-            </header>
 
-            <!-- Profile Content -->
-            <div class="content">
-                <div class="profile-container">
-                    <!-- Profile Picture Section -->
-                    <div class="profile-picture-section">
-                        <div class="profile-picture">
-                            <img src="${pageContext.request.contextPath}/assets/images/admin-avatar.png" alt="Profile Picture">
-                            <button class="change-picture-btn">
-                                <i class="fas fa-camera"></i> Change Picture
-                            </button>
-                        </div>
-                    </div>
+                <div class="profile-sections">
+                    <!-- Personal Information -->
+                    <section class="profile-section">
+                        <h3>Personal Information</h3>
+                        <form id="personalInfoForm" class="profile-form" action="${pageContext.request.contextPath}/profile" method="post" enctype="multipart/form-data">
+                            <input type="file" id="picture" name="picture" accept="image/*" style="display: none;">
+                            
+                            <div class="form-group">
+                                <label for="name">Full Name</label>
+                                <input type="text" id="name" name="name" value="${sessionScope.user.name}" class="form-control" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="email">Email Address</label>
+                                <input type="email" id="email" name="email" value="${sessionScope.user.email}" class="form-control" readonly>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="phone">Phone Number</label>
+                                <input type="tel" id="phone" name="phone" value="${sessionScope.user.contact}" class="form-control">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="address">Address</label>
+                                <textarea id="address" name="address" class="form-control" rows="3">${sessionScope.user.address}</textarea>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary">Update Information</button>
+                        </form>
+                    </section>
 
-                    <!-- Profile Form -->
-                    <form class="profile-form" id="profileForm">
-                        <div class="form-group">
-                            <label for="name">Name</label>
-                            <input type="text" id="name" name="name" value="${user.name}" required>
-                        </div>
+                    <!-- Change Password -->
+                    <section class="profile-section">
+                        <h3>Change Password</h3>
+                        <form id="passwordForm" class="profile-form" action="${pageContext.request.contextPath}/users/change-password" method="post">
+                            <div class="form-group">
+                                <label for="currentPassword">Current Password</label>
+                                <input type="password" id="currentPassword" name="currentPassword" class="form-control" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="newPassword">New Password</label>
+                                <input type="password" id="newPassword" name="newPassword" class="form-control" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="confirmPassword">Confirm New Password</label>
+                                <input type="password" id="confirmPassword" name="confirmPassword" class="form-control" required>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary">Change Password</button>
+                        </form>
+                    </section>
 
-                        <div class="form-group">
-                            <label for="email">Email</label>
-                            <input type="email" id="email" name="email" value="${user.email}" required>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="address">Address</label>
-                            <input type="text" id="address" name="address" value="${user.address}">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="contact">Contact</label>
-                            <input type="text" id="contact" name="contact" value="${user.contact}">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="currentPassword">Current Password</label>
-                            <input type="password" id="currentPassword" name="currentPassword">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="newPassword">New Password</label>
-                            <input type="password" id="newPassword" name="newPassword">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="confirmPassword">Confirm New Password</label>
-                            <input type="password" id="confirmPassword" name="confirmPassword">
-                        </div>
-
-                        <div class="form-actions">
-                            <button type="button" class="btn btn-secondary" onclick="resetForm()">Reset</button>
-                            <button type="submit" class="btn btn-primary">Save Changes</button>
-                        </div>
-                    </form>
+                    <!-- Notification Preferences -->
+                    <section class="profile-section">
+                        <h3>Notification Preferences</h3>
+                        <form id="notificationForm" class="profile-form">
+                            <div class="form-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="emailNotifications" checked>
+                                    Email Notifications
+                                </label>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="orderUpdates" checked>
+                                    Order Updates
+                                </label>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="marketingEmails">
+                                    Marketing Emails
+                                </label>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary">Save Preferences</button>
+                        </form>
+                    </section>
                 </div>
             </div>
         </main>
     </div>
 
-    <script src="${pageContext.request.contextPath}/assets/js/admin.js"></script>
     <script>
-        document.getElementById('profileForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const formData = new FormData(this);
-            const data = {};
-            formData.forEach((value, key) => {
-                if (value) data[key] = value;
-            });
+        // Preview image before upload
+        document.getElementById('picture').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const profileImage = document.getElementById('profileImage');
+                    const profileInitials = document.getElementById('profileInitials');
+                    
+                    if (profileImage) {
+                        profileImage.src = e.target.result;
+                    } else {
+                        if (profileInitials) {
+                            profileInitials.style.display = 'none';
+                        }
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.alt = 'Profile Picture';
+                        img.id = 'profileImage';
+                        document.querySelector('.profile-avatar').appendChild(img);
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        });
 
-            fetch('${pageContext.request.contextPath}/admin/profile', {
+        // Form submission handlers
+        document.getElementById('personalInfoForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            
+            fetch('${pageContext.request.contextPath}/profile', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(data)
+                body: formData
             })
             .then(response => {
                 if (response.ok) {
-                    return response.json();
+                    showNotification('Profile updated successfully', 'success');
                 } else {
-                    throw new Error('Network response was not ok');
-                }
-            })
-            .then(data => {
-                if (data.success) {
-                    alert('Profile updated successfully!');
-                    window.location.reload();
-                } else {
-                    alert(data.message || 'Error updating profile. Please try again.');
+                    throw new Error('Failed to update profile');
                 }
             })
             .catch(error => {
-                console.error('Error:', error);
-                alert('Error updating profile. Please try again.');
+                showNotification(error.message, 'error');
             });
         });
 
-        function resetForm() {
-            document.getElementById('profileForm').reset();
-        }
+        document.getElementById('passwordForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
 
-        // Handle profile picture change
-        document.querySelector('.change-picture-btn').addEventListener('click', function() {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = 'image/*';
+            if (newPassword !== confirmPassword) {
+                showNotification('Passwords do not match', 'error');
+                return;
+            }
+
+            const formData = new FormData(this);
             
-            input.onchange = function(e) {
-                const file = e.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        document.querySelector('.profile-picture img').src = e.target.result;
-                        
-                        // Upload the new picture
-                        const formData = new FormData();
-                        formData.append('picture', file);
-                        
-                        fetch('${pageContext.request.contextPath}/admin/profile/picture', {
-                            method: 'POST',
-                            body: formData
-                        })
-                        .then(response => {
-                            if (response.ok) {
-                                return response.json();
-                            } else {
-                                throw new Error('Network response was not ok');
-                            }
-                        })
-                        .then(data => {
-                            if (data.success) {
-                                alert('Profile picture updated successfully!');
-                                window.location.reload();
-                            } else {
-                                alert(data.message || 'Error updating profile picture. Please try again.');
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                            alert('Error updating profile picture. Please try again.');
-                        });
-                    };
-                    reader.readAsDataURL(file);
+            fetch('${pageContext.request.contextPath}/users/change-password', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (response.ok) {
+                    showNotification('Password changed successfully', 'success');
+                    this.reset();
+                } else {
+                    throw new Error('Failed to change password');
                 }
-            };
-            
-            input.click();
+            })
+            .catch(error => {
+                showNotification(error.message, 'error');
+            });
         });
+
+        document.getElementById('notificationForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            // Add your notification preferences update logic here
+            showNotification('Notification preferences updated successfully', 'success');
+        });
+
+        // Notification function
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                notification.style.transition = 'opacity 0.3s ease-in-out';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
     </script>
 </body>
 </html> 

@@ -9,7 +9,7 @@ public class User {
     private String password;
     private String picture;
     private String role;
-    private boolean active = true;
+    private boolean active;
 
     // Default constructor
     public User() {
@@ -95,15 +95,15 @@ public class User {
     }
 
     public String getRole() {
-        return role;
+        return role != null ? role.toUpperCase() : "USER";
     }
 
     public void setRole(String role) {
-        this.role = role;
+        this.role = role != null ? role.toUpperCase() : "USER";
     }
 
     public boolean isAdmin() {
-        return "ADMIN".equals(role);
+        return "ADMIN".equalsIgnoreCase(role);
     }
 
     public boolean isActive() {

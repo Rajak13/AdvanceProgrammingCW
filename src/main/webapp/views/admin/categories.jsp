@@ -15,7 +15,7 @@
         <!-- Sidebar -->
         <aside class="admin-sidebar">
             <div class="sidebar-header">
-                <h2>Panna<span>Admin</span></h2>
+                <h2>Panna BookStore</h2>
             </div>
             <nav class="sidebar-nav">
                 <ul>
@@ -38,15 +38,15 @@
                         </a>
                     </li>
                     <li>
-                        <a href="${pageContext.request.contextPath}/admin/users">
-                            <i class="fas fa-users"></i>
-                            <span>Users</span>
-                        </a>
-                    </li>
-                    <li>
                         <a href="${pageContext.request.contextPath}/admin/orders">
                             <i class="fas fa-shopping-bag"></i>
                             <span>Orders</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="${pageContext.request.contextPath}/admin/users">
+                            <i class="fas fa-users"></i>
+                            <span>Users</span>
                         </a>
                     </li>
                     <li>
@@ -67,7 +67,7 @@
 
         <!-- Main Content -->
         <main class="admin-main">
-            <!-- Top Navigation -->
+            <!-- Header -->
             <header class="admin-header">
                 <div class="header-left">
                     <button class="sidebar-toggle">
@@ -79,64 +79,136 @@
                     </div>
                 </div>
                 <div class="header-right">
+                    <div class="language-selector">
+                        <img src="${pageContext.request.contextPath}/assets/images/en-flag.png" alt="English">
+                    </div>
                     <div class="notifications">
                         <i class="fas fa-bell"></i>
-                        <span class="badge">3</span>
+                        <span class="badge">2</span>
                     </div>
-                    <div class="user-menu">
-                        <div class="user-avatar">
-                            <c:if test="${not empty sessionScope.user}">
-                                ${sessionScope.user.name.substring(0, 1).toUpperCase()}
-                            </c:if>
-                        </div>
-                        <div class="user-dropdown">
-                            <div class="user-info">
-                                <h4>${sessionScope.user.name}</h4>
-                                <p>${sessionScope.user.email}</p>
-                            </div>
-                            <ul>
-                                <li><a href="${pageContext.request.contextPath}/admin/profile"><i class="fas fa-user"></i> Profile</a></li>
-                                <li><a href="${pageContext.request.contextPath}/admin/settings"><i class="fas fa-cog"></i> Settings</a></li>
-                                <li><a href="${pageContext.request.contextPath}/logout"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
-                            </ul>
-                        </div>
+                    <div class="user-profile">
+                        <img src="${pageContext.request.contextPath}/assets/images/user-avatar.jpg" alt="User">
+                        <span>Aiden Max</span>
+                        <i class="fas fa-chevron-down"></i>
                     </div>
                 </div>
             </header>
 
             <!-- Categories Content -->
             <div class="dashboard-content">
-                <div class="dashboard-header">
-                    <h1>Categories Management</h1>
-                    <button class="btn btn-primary" id="addCategoryBtn">
-                        <i class="fas fa-plus"></i> Add New Category
-                    </button>
+                <!-- Stats Cards -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon categories">
+                            <i class="fas fa-tags"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>Total Categories</h3>
+                            <p class="stat-value">24</p>
+                            <p class="stat-change">+5% last month</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon books">
+                            <i class="fas fa-book"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>Total Books</h3>
+                            <p class="stat-value">1,234</p>
+                            <p class="stat-change">+15% last month</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon revenue">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>Category Revenue</h3>
+                            <p class="stat-value">$45,678</p>
+                            <p class="stat-change">+20% last month</p>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- Categories Grid -->
-                <div class="categories-grid">
-                    <c:forEach var="category" items="${categories}">
-                        <div class="category-card">
-                            <div class="category-icon">
-                                <i class="fas fa-tag"></i>
+                <!-- Categories Table -->
+                <div class="table-container">
+                    <div class="table-header">
+                        <h3>Categories Management</h3>
+                        <div class="table-actions">
+                            <div class="filters">
+                                <select class="form-control">
+                                    <option value="">Status</option>
+                                    <option value="active">Active</option>
+                                    <option value="inactive">Inactive</option>
+                                </select>
                             </div>
-                            <div class="category-info">
-                                <h3>${category.name}</h3>
-                                <p>${category.description}</p>
-                                <div class="category-stats">
-                                    <span><i class="fas fa-book"></i> ${category.bookCount} Books</span>
-                                </div>
-                            </div>
-                            <div class="category-actions">
-                                <button class="btn btn-edit" data-category-id="${category.id}" data-action="edit">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <button class="btn btn-delete" data-category-id="${category.id}" data-action="delete">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
+                            <button class="btn btn-primary" id="addCategoryBtn">
+                                <i class="fas fa-plus"></i> Add New Category
+                            </button>
                         </div>
-                    </c:forEach>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Category</th>
+                                <th>Description</th>
+                                <th>Books</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <c:forEach var="category" items="${categories}">
+                                <tr>
+                                    <td>
+                                        <div class="category-item">
+                                            <i class="fas fa-tag"></i>
+                                            <div class="category-info">
+                                                <h4>${category.name}</h4>
+                                                <p>${category.description}</p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>${category.description}</td>
+                                    <td>0</td>
+                                    <td>
+                                        <span class="status-badge inactive">N/A</span>
+                                    </td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <button class="btn-icon" onclick="viewCategory('${category.id}')">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button class="btn-icon" onclick="editCategory('${category.id}')">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="btn-icon" onclick="deleteCategory('${category.id}')">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </c:forEach>
+                        </tbody>
+                    </table>
+                    <div class="table-footer">
+                        <div class="table-info">
+                            Showing ${(currentPage - 1) * itemsPerPage + 1} to 
+                            ${Math.min(currentPage * itemsPerPage, totalItems)} of ${totalItems} entries
+                        </div>
+                        <div class="table-pagination">
+                            <c:if test="${currentPage > 1}">
+                                <button class="pagination-btn" onclick="changePage('${currentPage - 1}')">Previous</button>
+                            </c:if>
+                            <c:forEach begin="1" end="${totalPages}" var="i">
+                                <button class="pagination-btn ${currentPage == i ? 'active' : ''}" 
+                                        onclick="changePage('${i}')">${i}</button>
+                            </c:forEach>
+                            <c:if test="${currentPage < totalPages}">
+                                <button class="pagination-btn" onclick="changePage('${currentPage + 1}')">Next</button>
+                            </c:if>
+                        </div>
+                    </div>
                 </div>
             </div>
         </main>
@@ -147,143 +219,123 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h2 id="modalTitle">Add New Category</h2>
-                <button class="close-modal">&times;</button>
+                <button class="modal-close">&times;</button>
             </div>
             <div class="modal-body">
                 <form id="categoryForm">
                     <input type="hidden" id="categoryId" name="categoryId">
                     <div class="form-group">
-                        <label for="categoryName">Category Name</label>
-                        <input type="text" id="categoryName" name="categoryName" required>
+                        <label for="name">Category Name</label>
+                        <input type="text" id="name" name="name" class="form-control" required>
                     </div>
                     <div class="form-group">
                         <label for="description">Description</label>
-                        <textarea id="description" name="description" rows="4" required></textarea>
+                        <textarea id="description" name="description" class="form-control" rows="4" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="icon">Icon</label>
+                        <select id="icon" name="icon" class="form-control" required>
+                            <option value="fa-book">Book</option>
+                            <option value="fa-graduation-cap">Education</option>
+                            <option value="fa-heart">Romance</option>
+                            <option value="fa-dragon">Fantasy</option>
+                            <option value="fa-microscope">Science</option>
+                            <option value="fa-history">History</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="status">Status</label>
+                        <select id="status" name="status" class="form-control" required>
+                            <option value="Active">Active</option>
+                            <option value="Inactive">Inactive</option>
+                        </select>
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-secondary" id="cancelBtn">Cancel</button>
-                <button class="btn btn-primary" id="saveBtn">Save Category</button>
+                <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveCategory()">Save Category</button>
             </div>
         </div>
     </div>
 
     <script src="${pageContext.request.contextPath}/js/admin.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const categoryModal = document.getElementById('categoryModal');
-            const categoryForm = document.getElementById('categoryForm');
-            const addCategoryBtn = document.getElementById('addCategoryBtn');
-            const saveBtn = document.getElementById('saveBtn');
-            const cancelBtn = document.getElementById('cancelBtn');
-            const closeModal = document.querySelector('.close-modal');
+        window.ctx = '${pageContext.request.contextPath}';
+        // Category Management Functions
+        function viewCategory(id) {
+            // Implement view category details
+        }
 
-            // Function to close the modal
-            function closeCategoryModal() {
-                categoryModal.style.display = 'none';
-                categoryForm.reset();
-                document.getElementById('categoryId').value = '';
-            }
+        function editCategory(id) {
+            fetch(`${window.ctx}/api/categories/${id}`)
+                .then(response => response.json())
+                .then(category => {
+                    document.getElementById('modalTitle').textContent = 'Edit Category';
+                    document.getElementById('categoryId').value = category.id;
+                    document.getElementById('name').value = category.name;
+                    document.getElementById('description').value = category.description;
+                    document.getElementById('icon').value = category.icon;
+                    document.getElementById('status').value = category.status;
+                    openModal();
+                })
+                .catch(error => console.error('Error:', error));
+        }
 
-            // Close modal when clicking outside
-            window.addEventListener('click', function(event) {
-                if (event.target === categoryModal) {
-                    closeCategoryModal();
-                }
-            });
-
-            // Handle edit and delete buttons
-            document.querySelectorAll('.category-actions button').forEach(button => {
-                button.addEventListener('click', function() {
-                    const categoryId = this.getAttribute('data-category-id');
-                    const action = this.getAttribute('data-action');
-                    
-                    if (!categoryId) {
-                        alert('No category selected!');
-                        return;
-                    }
-
-                    if (action === 'edit') {
-                        fetch(`/BookStore/admin/categories?categoryId=${categoryId}`)
-                            .then(response => {
-                                if (!response.ok) throw new Error('Failed to fetch category');
-                                return response.json();
-                            })
-                            .then(category => {
-                                document.getElementById('modalTitle').textContent = 'Edit Category';
-                                document.getElementById('categoryId').value = category.id;
-                                document.getElementById('categoryName').value = category.name;
-                                document.getElementById('description').value = category.description;
-                                categoryModal.style.display = 'block';
-                            })
-                            .catch(error => {
-                                alert('Failed to fetch category details');
-                            });
-                    }
-
-                    if (action === 'delete') {
-                        if (categoryId && confirm('Are you sure you want to delete this category?')) {
-                            fetch(`/BookStore/admin/categories?categoryId=${categoryId}`, {
-                                method: 'DELETE'
-                            })
-                            .then(response => {
-                                if (response.ok) {
-                                    location.reload();
-                                } else {
-                                    throw new Error('Failed to delete category');
-                                }
-                            })
-                            .catch(error => {
-                                alert('Failed to delete category');
-                            });
+        function deleteCategory(id) {
+            if (confirm('Are you sure you want to delete this category?')) {
+                fetch(`${window.ctx}/api/categories/${id}`, { method: 'DELETE' })
+                    .then(response => {
+                        if (response.ok) {
+                            location.reload();
+                        } else {
+                            throw new Error('Failed to delete category');
                         }
-                    }
-                });
-            });
+                    })
+                    .catch(error => console.error('Error:', error));
+            }
+        }
 
-            // Add Category Button
-            addCategoryBtn.addEventListener('click', function() {
-                document.getElementById('modalTitle').textContent = 'Add New Category';
-                categoryForm.reset();
-                document.getElementById('categoryId').value = '';
-                categoryModal.style.display = 'block';
-            });
-
-            // Save Category
-            saveBtn.addEventListener('click', function() {
-                const formData = new FormData(categoryForm);
-                const categoryId = document.getElementById('categoryId').value;
-                const action = categoryId ? 'edit' : 'add';
-                
-                // Add action parameter
-                formData.append('action', action);
-                if (categoryId) {
-                    formData.append('categoryId', categoryId);
+        function saveCategory() {
+            const form = document.getElementById('categoryForm');
+            const formData = new FormData(form);
+            
+            fetch(`${window.ctx}/api/categories`, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (response.ok) {
+                    closeModal();
+                    location.reload();
+                } else {
+                    throw new Error('Failed to save category');
                 }
+            })
+            .catch(error => console.error('Error:', error));
+        }
 
-                fetch('/BookStore/admin/categories', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => {
-                    if (response.ok) {
-                        closeCategoryModal();
-                        location.reload();
-                    } else {
-                        throw new Error('Failed to save category');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error saving category:', error);
-                    alert('Failed to save category');
-                });
-            });
+        function openModal() {
+            document.getElementById('categoryModal').classList.add('active');
+        }
 
-            // Close Modal buttons
-            closeModal.addEventListener('click', closeCategoryModal);
-            cancelBtn.addEventListener('click', closeCategoryModal);
+        function closeModal() {
+            document.getElementById('categoryModal').classList.remove('active');
+            document.getElementById('categoryForm').reset();
+        }
+
+        function changePage(page) {
+            window.location.href = `?page=${page}`;
+        }
+
+        // Initialize modal triggers
+        document.getElementById('addCategoryBtn').addEventListener('click', function() {
+            document.getElementById('modalTitle').textContent = 'Add New Category';
+            document.getElementById('categoryForm').reset();
+            openModal();
         });
+
+        document.querySelector('.modal-close').addEventListener('click', closeModal);
     </script>
 </body>
 </html> 

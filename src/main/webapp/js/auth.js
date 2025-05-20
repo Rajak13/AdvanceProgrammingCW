@@ -3,32 +3,26 @@ document.addEventListener('DOMContentLoaded', function() {
     const signInButton = document.getElementById('signIn');
     const container = document.getElementById('container');
     
-    // Check if we should show register panel by default
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('panel') === 'register') {
-        container.classList.add('right-panel-active');
+    // Only change panel if not already set by server
+    if (!container.classList.contains('right-panel-active')) {
+        // Check URL to determine which panel to show
+        const path = window.location.pathname;
+        if (path.includes('/register')) {
+            container.classList.add('right-panel-active');
+        } else {
+            container.classList.remove('right-panel-active');
+        }
     }
     
-    // Enhanced click handlers with animation
     signUpButton.addEventListener('click', () => {
         container.classList.add('right-panel-active');
-        // Add animation class
-        container.classList.add('animate');
-        setTimeout(() => {
-            container.classList.remove('animate');
-        }, 600);
     });
     
     signInButton.addEventListener('click', () => {
         container.classList.remove('right-panel-active');
-        // Add animation class
-        container.classList.add('animate');
-        setTimeout(() => {
-            container.classList.remove('animate');
-        }, 600);
     });
     
-    // Auto-hide messages with fade effect
+    // Auto-hide messages after 5 seconds
     const errorMessages = document.querySelectorAll('.error-message');
     const successMessages = document.querySelectorAll('.success-message');
     
@@ -159,19 +153,11 @@ document.addEventListener('DOMContentLoaded', function() {
         mobileSignUpButton.addEventListener('click', (e) => {
             e.preventDefault();
             container.classList.add('right-panel-active');
-            container.classList.add('animate');
-            setTimeout(() => {
-                container.classList.remove('animate');
-            }, 600);
         });
         
         mobileSignInButton.addEventListener('click', (e) => {
             e.preventDefault();
             container.classList.remove('right-panel-active');
-            container.classList.add('animate');
-            setTimeout(() => {
-                container.classList.remove('animate');
-            }, 600);
         });
     }
     
@@ -179,9 +165,11 @@ document.addEventListener('DOMContentLoaded', function() {
     function checkMobileView() {
         if (window.innerWidth <= 768) {
             setupMobileToggles();
+            // Add class for mobile view
             document.body.classList.add('mobile-view');
         } else {
             document.body.classList.remove('mobile-view');
+            // Remove mobile toggles if they exist
             const existingToggles = document.querySelectorAll('.mobile-toggle');
             existingToggles.forEach(toggle => toggle.remove());
         }

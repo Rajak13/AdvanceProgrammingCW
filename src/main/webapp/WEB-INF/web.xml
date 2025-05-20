@@ -14,7 +14,6 @@
         <session-timeout>30</session-timeout>
     </session-config>
 
-
     <filter>
         <filter-name>AuthFilter</filter-name>
         <filter-class>filters.AuthFilter</filter-class>
@@ -33,6 +32,8 @@
             <url-pattern>/js/*</url-pattern>
             <url-pattern>/images/*</url-pattern>
             <url-pattern>/fonts/*</url-pattern>
+            <url-pattern>/</url-pattern>
+            <url-pattern>/home</url-pattern>
         </web-resource-collection>
     </security-constraint>
 
@@ -44,4 +45,5 @@
         <url-pattern>/images/*</url-pattern>
         <url-pattern>/fonts/*</url-pattern>
     </servlet-mapping>
+
 </web-app>

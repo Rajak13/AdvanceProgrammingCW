@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,6 +10,7 @@
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/admin.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <div class="admin-container">
@@ -37,7 +39,7 @@
                             <span>Categories</span>
                         </a>
                     </li>
-                    <li>
+                    <li >
                         <a href="${pageContext.request.contextPath}/admin/users">
                             <i class="fas fa-users"></i>
                             <span>Users</span>
@@ -65,7 +67,9 @@
             </nav>
         </aside>
 
+    
         <!-- Main Content -->
+         <!-- Main Content -->
         <main class="admin-main">
             <!-- Top Navigation -->
             <header class="admin-header">
@@ -74,7 +78,7 @@
                         <i class="fas fa-bars"></i>
                     </button>
                     <div class="search-bar">
-                        <input type="text" placeholder="Search...">
+                        <input type="text" placeholder="Search users...">
                         <button><i class="fas fa-search"></i></button>
                     </div>
                 </div>
@@ -84,21 +88,10 @@
                         <span class="badge">3</span>
                     </div>
                     <div class="user-menu">
-                        <div class="user-avatar">
+                        <div class="user-info">
                             <c:if test="${not empty sessionScope.user}">
-                                ${sessionScope.user.name.substring(0, 1).toUpperCase()}
+                                <span>${sessionScope.user.name}</span>
                             </c:if>
-                        </div>
-                        <div class="user-dropdown">
-                            <div class="user-info">
-                                <h4>${sessionScope.user.name}</h4>
-                                <p>${sessionScope.user.email}</p>
-                            </div>
-                            <ul>
-                                <li><a href="${pageContext.request.contextPath}/admin/profile"><i class="fas fa-user"></i> Profile</a></li>
-                                <li><a href="${pageContext.request.contextPath}/admin/settings"><i class="fas fa-cog"></i> Settings</a></li>
-                                <li><a href="${pageContext.request.contextPath}/logout"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
-                            </ul>
                         </div>
                     </div>
                 </div>
@@ -106,119 +99,269 @@
 
             <!-- Dashboard Content -->
             <div class="dashboard-content">
-                <div class="dashboard-header">
-                    <h1>Dashboard Overview</h1>
-                    <div class="date-filter">
-                        <select>
-                            <option>Today</option>
-                            <option>This Week</option>
-                            <option>This Month</option>
-                            <option>This Year</option>
-                        </select>
-                    </div>
-                </div>
-
                 <!-- Stats Cards -->
                 <div class="stats-grid">
                     <div class="stat-card">
-                        <div class="stat-icon">
+                        <div class="stat-icon sales">
                             <i class="fas fa-book"></i>
                         </div>
                         <div class="stat-info">
                             <h3>Total Books</h3>
-                            <p class="stat-value">1,234</p>
-                            <p class="stat-change positive">+12% from last month</p>
+                            <p class="stat-value">${totalBooks}</p>
+                            <p class="stat-change">+${newBooksThisMonth} this month</p>
                         </div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-icon">
+                        <div class="stat-icon customers">
                             <i class="fas fa-users"></i>
                         </div>
                         <div class="stat-info">
-                            <h3>Active Users</h3>
-                            <p class="stat-value">567</p>
-                            <p class="stat-change positive">+8% from last month</p>
+                            <h3>Active Readers</h3>
+                            <p class="stat-value">${activeReaders}</p>
+                            <p class="stat-change">+${newReadersThisMonth} this month</p>
                         </div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-icon">
-                            <i class="fas fa-shopping-bag"></i>
-                        </div>
-                        <div class="stat-info">
-                            <h3>Total Orders</h3>
-                            <p class="stat-value">890</p>
-                            <p class="stat-change positive">+15% from last month</p>
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon">
+                        <div class="stat-icon revenue">
                             <i class="fas fa-dollar-sign"></i>
                         </div>
                         <div class="stat-info">
-                            <h3>Revenue</h3>
-                            <p class="stat-value">$45,678</p>
-                            <p class="stat-change positive">+20% from last month</p>
+                            <h3>Book Sales</h3>
+                            <p class="stat-value">$${totalSales}</p>
+                            <p class="stat-change">+${salesGrowth}% this month</p>
                         </div>
                     </div>
                 </div>
 
-                <!-- Recent Activity and Charts -->
+                <!-- Charts and Tables -->
                 <div class="dashboard-grid">
+                    <!-- Revenue Chart -->
                     <div class="chart-card">
-                        <div class="card-header">
-                            <h3>Sales Overview</h3>
-                            <div class="chart-actions">
-                                <button class="active">Daily</button>
-                                <button>Weekly</button>
-                                <button>Monthly</button>
+                        <div class="chart-header">
+                            <h3>Revenue</h3>
+                            <div class="chart-legend">
+                                <span class="legend-item">
+                                    <i class="fas fa-circle" style="color: #4CAF50"></i>
+                                    Google ads
+                                </span>
+                                <span class="legend-item">
+                                    <i class="fas fa-circle" style="color: #FF9800"></i>
+                                    Facebook ads
+                                </span>
                             </div>
                         </div>
-                        <div class="chart-container">
-                            <!-- Chart will be rendered here -->
-                            <canvas id="salesChart"></canvas>
+                        <div class="chart-container" style="height: 300px;">
+                            <canvas id="revenueChart"></canvas>
                         </div>
                     </div>
-                    <div class="activity-card">
-                        <div class="card-header">
-                            <h3>Recent Activity</h3>
-                            <a href="#" class="view-all">View All</a>
+
+                    <!-- Website Visitors -->
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3>Website Visitors</h3>
                         </div>
-                        <div class="activity-list">
-                            <div class="activity-item">
-                                <div class="activity-icon">
-                                    <i class="fas fa-book"></i>
-                                </div>
-                                <div class="activity-info">
-                                    <p>New book "The Great Adventure" added</p>
-                                    <span class="activity-time">2 hours ago</span>
-                                </div>
+                        <div class="chart-container" style="height: 300px;">
+                            <canvas id="visitorsChart"></canvas>
+                        </div>
+                        <div class="visitors-stats">
+                            <div class="stat-item">
+                                <span class="stat-label">Direct</span>
+                                <span class="stat-value">38%</span>
                             </div>
-                            <div class="activity-item">
-                                <div class="activity-icon">
-                                    <i class="fas fa-shopping-bag"></i>
-                                </div>
-                                <div class="activity-info">
-                                    <p>New order #1234 placed</p>
-                                    <span class="activity-time">3 hours ago</span>
-                                </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Organic</span>
+                                <span class="stat-value">22%</span>
                             </div>
-                            <div class="activity-item">
-                                <div class="activity-icon">
-                                    <i class="fas fa-user"></i>
-                                </div>
-                                <div class="activity-info">
-                                    <p>New user registered</p>
-                                    <span class="activity-time">5 hours ago</span>
-                                </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Paid</span>
+                                <span class="stat-value">12%</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Social</span>
+                                <span class="stat-value">28%</span>
                             </div>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Top Selling Books -->
+                <div class="table-container">
+                    <div class="table-header">
+                        <h3>Top Selling Books</h3>
+                        <div class="table-actions">
+                            <div class="search-bar">
+                                <input type="text" placeholder="Search books...">
+                                <button><i class="fas fa-search"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Book</th>
+                                <th>Author</th>
+                                <th>Category</th>
+                                <th>Price</th>
+                                <th>Sales</th>
+                                <th>Revenue</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <c:forEach var="book" items="${topSellingBooks}">
+                                <tr>
+                                    <td>
+                                        <div class="product-item">
+                                            <img src="${pageContext.request.contextPath}${book.coverImage}" 
+                                                 alt="${book.title}" class="product-image">
+                                            <div class="product-info">
+                                                <h4>${book.title}</h4>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>${book.author}</td>
+                                    <td>${book.category}</td>
+                                    <td>$${book.price}</td>
+                                    <td>${book.salesCount}</td>
+                                    <td>$${book.revenue}</td>
+                                </tr>
+                            </c:forEach>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Recent Orders -->
+                <div class="table-container">
+                    <div class="table-header">
+                        <h3>Recent Orders</h3>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Customer</th>
+                                <th>Books</th>
+                                <th>Total</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <c:forEach var="order" items="${recentOrders}">
+                                <tr>
+                                    <td>#${order.id}</td>
+                                    <td>
+                                        <div class="customer-info">
+                                            <div class="customer-avatar">${fn:substring(order.customerName, 0, 1)}</div>
+                                            <div>
+                                                <h4>${order.customerName}</h4>
+                                                <p>${order.customerEmail}</p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>${order.bookCount} books</td>
+                                    <td>$${order.total}</td>
+                                    <td>
+                                        <span class="status-badge ${order.status.toLowerCase()}">${order.status}</span>
+                                    </td>
+                                    <td>${order.orderDate}</td>
+                                </tr>
+                            </c:forEach>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Popular Categories -->
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3>Popular Book Categories</h3>
+                    </div>
+                    <div class="chart-container" style="height: 300px;">
+                        <canvas id="categoriesChart"></canvas>
+                    </div>
+                    <div class="category-stats">
+                        <c:forEach var="category" items="${topCategories}">
+                            <div class="stat-item">
+                                <span class="stat-label">${category.name}</span>
+                                <span class="stat-value">${category.percentage}%</span>
+                            </div>
+                        </c:forEach>
                     </div>
                 </div>
             </div>
         </main>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="${pageContext.request.contextPath}/js/admin.js"></script>
+    <script>
+        window.ctx = '${pageContext.request.contextPath}';
+        // Initialize Charts
+        document.addEventListener('DOMContentLoaded', function() {
+            // Monthly Sales Chart
+            const salesCtx = document.getElementById('salesChart').getContext('2d');
+            new Chart(salesCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                    datasets: [{
+                        label: 'Book Sales',
+                        data: [65, 59, 80, 81, 56, 55, 40, 45, 60, 75, 85, 90],
+                        fill: false,
+                        borderColor: '#4CAF50',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + value;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Categories Chart
+            const categoriesCtx = document.getElementById('categoriesChart').getContext('2d');
+            new Chart(categoriesCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Fiction', 'Non-Fiction', 'Academic', 'Children', 'Technology'],
+                    datasets: [{
+                        data: [30, 25, 20, 15, 10],
+                        backgroundColor: [
+                            '#FF6384',
+                            '#36A2EB',
+                            '#FFCE56',
+                            '#4BC0C0',
+                            '#9966FF'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                        }
+                    }
+                }
+            });
+        });
+    </script>
 </body>
-</html> 
+</html>

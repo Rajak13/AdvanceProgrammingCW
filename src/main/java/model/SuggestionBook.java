@@ -4,25 +4,14 @@ import java.sql.Timestamp;
 
 public class SuggestionBook {
     private int suggestionId;
-    private String suggestedBook;
-    private String category;
-    private String writer;
-    private String description;
-    private Timestamp date;
     private int userId;
+    private String title;
+    private String author;
+    private String description;
+    private String status;
+    private Timestamp date;
 
     public SuggestionBook() {
-    }
-
-    public SuggestionBook(int suggestionId, String suggestedBook, String category, String writer, String description,
-            Timestamp date, int userId) {
-        this.suggestionId = suggestionId;
-        this.suggestedBook = suggestedBook;
-        this.category = category;
-        this.writer = writer;
-        this.description = description;
-        this.date = date;
-        this.userId = userId;
     }
 
     public int getSuggestionId() {
@@ -33,28 +22,28 @@ public class SuggestionBook {
         this.suggestionId = suggestionId;
     }
 
-    public String getSuggestedBook() {
-        return suggestedBook;
+    public int getUserId() {
+        return userId;
     }
 
-    public void setSuggestedBook(String suggestedBook) {
-        this.suggestedBook = suggestedBook;
+    public void setUserId(int userId) {
+        this.userId = userId;
     }
 
-    public String getCategory() {
-        return category;
+    public String getTitle() {
+        return title;
     }
 
-    public void setCategory(String category) {
-        this.category = category;
+    public void setTitle(String title) {
+        this.title = title;
     }
 
-    public String getWriter() {
-        return writer;
+    public String getAuthor() {
+        return author;
     }
 
-    public void setWriter(String writer) {
-        this.writer = writer;
+    public void setAuthor(String author) {
+        this.author = author;
     }
 
     public String getDescription() {
@@ -65,6 +54,14 @@ public class SuggestionBook {
         this.description = description;
     }
 
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
     public Timestamp getDate() {
         return date;
     }
@@ -73,18 +70,9 @@ public class SuggestionBook {
         this.date = date;
     }
 
-    public int getUserId() {
-        return userId;
-    }
-
-    public void setUserId(int userId) {
-        this.userId = userId;
-    }
-
     @Override
     public String toString() {
-        return "SuggestionBook [suggestionId=" + suggestionId + ", suggestedBook=" + suggestedBook + ", category="
-                + category + ", writer=" + writer + ", description=" + description + ", date=" + date + ", userId="
-                + userId + "]";
+        return "SuggestionBook [suggestionId=" + suggestionId + ", userId=" + userId + ", title=" + title + ", author="
+                + author + ", description=" + description + ", status=" + status + ", date=" + date + "]";
     }
 }

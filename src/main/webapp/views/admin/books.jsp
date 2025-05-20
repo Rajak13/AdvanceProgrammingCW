@@ -5,120 +5,80 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Books Management - Panna BookStore Admin</title>
+    <title>Books Management - Panna BookStore</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/admin.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
     <div class="admin-container">
-        <!-- Sidebar -->
-        <aside class="admin-sidebar">
-            <div class="sidebar-header">
-                <h2>Panna<span>Admin</span></h2>
-            </div>
-            <nav class="sidebar-nav">
-                <ul>
-                    <li>
-                        <a href="${pageContext.request.contextPath}/admin/dashboard">
-                            <i class="fas fa-home"></i>
-                            <span>Dashboard</span>
-                        </a>
-                    </li>
-                    <li class="active">
-                        <a href="${pageContext.request.contextPath}/admin/books">
-                            <i class="fas fa-book"></i>
-                            <span>Books</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="${pageContext.request.contextPath}/admin/categories">
-                            <i class="fas fa-tags"></i>
-                            <span>Categories</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="${pageContext.request.contextPath}/admin/users">
-                            <i class="fas fa-users"></i>
-                            <span>Users</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="${pageContext.request.contextPath}/admin/orders">
-                            <i class="fas fa-shopping-bag"></i>
-                            <span>Orders</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="${pageContext.request.contextPath}/admin/profile">
-                            <i class="fas fa-user"></i>
-                            <span>Profile</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="${pageContext.request.contextPath}/admin/settings">
-                            <i class="fas fa-cog"></i>
-                            <span>Settings</span>
-                        </a>
-                    </li>
-                </ul>
-            </nav>
-        </aside>
-
-        <!-- Main Content -->
+        <jsp:include page="common/sidebar.jsp" />
+        
         <main class="admin-main">
-            <!-- Top Navigation -->
-            <header class="admin-header">
-                <div class="header-left">
-                    <button class="sidebar-toggle">
-                        <i class="fas fa-bars"></i>
-                    </button>
-                    <div class="search-bar">
-                        <input type="text" placeholder="Search books...">
-                        <button><i class="fas fa-search"></i></button>
-                    </div>
-                </div>
-                <div class="header-right">
-                    <div class="notifications">
-                        <i class="fas fa-bell"></i>
-                        <span class="badge">3</span>
-                    </div>
-                    <div class="user-menu">
-                        <div class="user-avatar">
-                            <c:if test="${not empty sessionScope.user}">
-                                ${sessionScope.user.name.substring(0, 1).toUpperCase()}
-                            </c:if>
-                        </div>
-                        <div class="user-dropdown">
-                            <h4>${sessionScope.user.name}</h4>
-                            <p>${sessionScope.user.email}</p>
-                            <ul>
-                                <li><a href="${pageContext.request.contextPath}/admin/profile"><i class="fas fa-user"></i> Profile</a></li>
-                                <li><a href="${pageContext.request.contextPath}/admin/settings"><i class="fas fa-cog"></i> Settings</a></li>
-                                <li><a href="${pageContext.request.contextPath}/logout"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </header>
+            <jsp:include page="common/header.jsp" />
 
             <!-- Books Content -->
             <div class="dashboard-content">
-                <div class="dashboard-header">
-                    <h1>Books Management</h1>
-                    <button class="btn btn-primary" id="addBookBtn">
-                        <i class="fas fa-plus"></i> Add New Book
-                    </button>
+                <!-- Stats Cards -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon sales">
+                            <i class="fas fa-book"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>Total Books</h3>
+                            <p class="stat-value">${totalBooks}</p>
+                            <p class="stat-change">+${newBooksThisMonth} this month</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon customers">
+                            <i class="fas fa-tags"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>Categories</h3>
+                            <p class="stat-value">${totalCategories}</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon revenue">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>Revenue</h3>
+                            <p class="stat-value">$${totalRevenue}</p>
+                            <p class="stat-change">+${revenueGrowth}% this month</p>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Books Table -->
                 <div class="table-container">
+                    <div class="table-header">
+                        <h3>Books Management</h3>
+                        <div class="table-actions">
+                            <div class="filters">
+                                <select class="form-control">
+                                    <option value="">All Categories</option>
+                                    <c:forEach var="category" items="${categories}">
+                                        <option value="${category.id}">${category.name}</option>
+                                    </c:forEach>
+                                </select>
+                                <select class="form-control">
+                                    <option value="">Status</option>
+                                    <option value="active">Active</option>
+                                    <option value="inactive">Inactive</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-primary" id="addBookBtn">
+                                <i class="fas fa-plus"></i> Add New Book
+                            </button>
+                        </div>
+                    </div>
                     <table class="data-table">
                         <thead>
                             <tr>
-                                <th>ID</th>
-                                <th>Cover</th>
-                                <th>Title</th>
+                                <th>Book</th>
                                 <th>Author</th>
                                 <th>Category</th>
                                 <th>Price</th>
@@ -130,60 +90,55 @@
                         <tbody>
                             <c:forEach var="book" items="${books}">
                                 <tr>
-                                    <td>${book.id}</td>
                                     <td>
-                                        <img src="${book.coverImage}" alt="${book.title}" class="book-cover">
+                                        <div class="book-item">
+                                            <img src="${pageContext.request.contextPath}/uploads/books/${book.picture}" alt="${book.bookName}" class="book-image">
+                                            <div class="book-info">
+                                                <h4>${book.bookName}</h4>
+                                            </div>
+                                        </div>
                                     </td>
-                                    <td>${book.title}</td>
-                                    <td>${book.author}</td>
-                                    <td>${book.category}</td>
-                                    <td>$${book.price}</td>
+                                    <td>${book.writerName}</td>
+                                    <td>
+                                        <c:forEach var="category" items="${book.categories}">
+                                            <span class="category-badge">${category.name}</span>
+                                        </c:forEach>
+                                    </td>
+                                    <td>${book.price}</td>
                                     <td>${book.stock}</td>
                                     <td>
-                                        <span class="status-badge ${book.status == 'Active' ? 'active' : 'inactive'}">
-                                            ${book.status}
-                                        </span>
+                                        <span class="status-badge ${book.status}">${book.status}</span>
                                     </td>
                                     <td>
                                         <div class="action-buttons">
-                                            <button class="btn btn-edit" data-book-id="${book.id}" data-action="edit">
-                                                <i class="fas fa-edit"></i>
-                                            </button>
-                                            <button class="btn btn-delete" data-book-id="${book.id}" data-action="delete">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
+                                            <button class="btn-icon" onclick="editBook('${book.bookId}')"><i class="fas fa-edit"></i></button>
+                                            <button class="btn-icon" onclick="deleteBook('${book.bookId}')"><i class="fas fa-trash"></i></button>
                                         </div>
                                     </td>
                                 </tr>
                             </c:forEach>
                         </tbody>
                     </table>
-                </div>
-
-                <!-- Pagination -->
-                <div class="pagination">
+                    <div class="table-footer">
+                        <div class="table-info">
+                            Showing ${(currentPage - 1) * itemsPerPage + 1} to 
+                            ${((currentPage * itemsPerPage) > totalItems) ? totalItems : (currentPage * itemsPerPage)} of ${totalItems} entries
+                        </div>
+                        <div class="table-pagination">
                     <c:if test="${currentPage > 1}">
-                        <a href="?page=${currentPage - 1}" class="page-link">
-                            <i class="fas fa-chevron-left"></i> Previous
-                        </a>
+                                <button class="pagination-btn" onclick="changePage('${currentPage - 1}')">Previous</button>
                     </c:if>
-                    
-                    <c:forEach begin="1" end="${noOfPages}" var="i">
-                        <c:choose>
-                            <c:when test="${currentPage eq i}">
-                                <span class="page-link active">${i}</span>
-                            </c:when>
-                            <c:otherwise>
-                                <a href="?page=${i}" class="page-link">${i}</a>
-                            </c:otherwise>
-                        </c:choose>
+                            <c:set var="end" value="${currentPage + 2}" />
+                            <c:set var="endPage" value="${end > noOfPages ? noOfPages : end}" />
+                            <c:forEach begin="1" end="${endPage}" var="i">
+                                <button class="pagination-btn ${currentPage == i ? 'active' : ''}" 
+                                        onclick="changePage('${i}')">${i}</button>
                     </c:forEach>
-                    
-                    <c:if test="${currentPage lt noOfPages}">
-                        <a href="?page=${currentPage + 1}" class="page-link">
-                            Next <i class="fas fa-chevron-right"></i>
-                        </a>
+                            <c:if test="${currentPage < totalPages}">
+                                <button class="pagination-btn" onclick="changePage('${currentPage + 1}')">Next</button>
                     </c:if>
+                        </div>
+                    </div>
                 </div>
             </div>
         </main>
@@ -194,179 +149,242 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h2 id="modalTitle">Add New Book</h2>
-                <button class="close-modal">&times;</button>
+                <button type="button" class="close-modal">&times;</button>
             </div>
             <div class="modal-body">
                 <form id="bookForm" enctype="multipart/form-data">
                     <input type="hidden" id="bookId" name="bookId">
                     <div class="form-group">
-                        <label for="bookName">Book Name</label>
-                        <input type="text" id="bookName" name="bookName" required>
+                        <label for="bookName">Book Title*</label>
+                        <input type="text" id="bookName" name="bookName" class="form-control" required>
                     </div>
                     <div class="form-group">
-                        <label for="writerName">Writer Name</label>
-                        <input type="text" id="writerName" name="writerName" required>
+                        <label for="writerName">Author*</label>
+                        <input type="text" id="writerName" name="writerName" class="form-control" required>
                     </div>
                     <div class="form-group">
-                        <label for="categories">Categories</label>
-                        <select id="categories" name="categories" multiple required>
+                        <label for="category">Category*</label>
+                        <select id="category" name="category" class="form-control" required>
+                            <option value="">Select Category</option>
                             <c:forEach var="category" items="${categories}">
-                                <option value="${category.categoryId}">${category.categoryName}</option>
+                                <option value="${category.id}">${category.name}</option>
                             </c:forEach>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="price">Price</label>
-                        <input type="number" id="price" name="price" step="0.01" required>
+                        <label for="price">Price*</label>
+                        <input type="number" id="price" name="price" class="form-control" step="0.01" min="0" required>
                     </div>
                     <div class="form-group">
-                        <label for="stock">Stock</label>
-                        <input type="number" id="stock" name="stock" required>
+                        <label for="stock">Stock*</label>
+                        <input type="number" id="stock" name="stock" class="form-control" min="0" required>
                     </div>
                     <div class="form-group">
                         <label for="description">Description</label>
-                        <textarea id="description" name="description" rows="4" required></textarea>
+                        <textarea id="description" name="description" class="form-control" rows="4"></textarea>
                     </div>
                     <div class="form-group">
-                        <label for="status">Status</label>
-                        <select id="status" name="status" required>
-                            <option value="New">New Release</option>
-                            <option value="Deal">Deal</option>
-                            <option value="Bestseller">Bestseller</option>
+                        <label for="status">Status*</label>
+                        <select id="status" name="status" class="form-control" required>
+                            <option value="">Select Status</option>
+                            <option value="new-release">New Release</option>
+                            <option value="bestseller">Bestseller</option>
+                            <option value="deals">Deals</option>
                         </select>
                     </div>
                     <div class="form-group">
                         <label for="picture">Cover Image</label>
-                        <input type="file" id="picture" name="picture" accept="image/*">
+                        <input type="file" id="picture" name="picture" class="form-control" accept="image/*" onchange="previewImage(this)">
+                        <div id="imagePreview" class="mt-2"></div>
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-secondary" id="cancelBtn">Cancel</button>
-                <button class="btn btn-primary" id="saveBtn">Save Book</button>
+                <button type="button" class="btn btn-secondary">Cancel</button>
+                <button type="submit" form="bookForm" class="btn btn-primary">Save Book</button>
             </div>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
+    <script src="${pageContext.request.contextPath}/js/admin.js"></script>
     <script>
+        window.ctx = '${pageContext.request.contextPath}';
         document.addEventListener('DOMContentLoaded', function() {
             const bookModal = document.getElementById('bookModal');
             const bookForm = document.getElementById('bookForm');
             const addBookBtn = document.getElementById('addBookBtn');
-            const saveBtn = document.getElementById('saveBtn');
-            const cancelBtn = document.getElementById('cancelBtn');
-            const closeModal = document.querySelector('.close-modal');
-
-            // Function to close the modal
-            function closeBookModal() {
-                bookModal.style.display = 'none';
-                bookForm.reset();
-                document.getElementById('bookId').value = '';
+            
+            // Show modal function
+            function showModal() {
+                bookModal.style.display = 'block';
+                bookModal.classList.add('show');
             }
 
-            // Close modal when clicking outside
+            // Hide modal function
+            function hideModal() {
+                bookModal.style.display = 'none';
+                bookModal.classList.remove('show');
+                bookForm.reset();
+            }
+
+            // Add Book button click
+            addBookBtn.addEventListener('click', function() {
+                document.getElementById('modalTitle').textContent = 'Add New Book';
+                document.getElementById('bookId').value = '';
+                showModal();
+            });
+
+            // Close modal when clicking close button or outside
+            document.querySelector('.close-modal').addEventListener('click', hideModal);
+            document.querySelector('.btn-secondary').addEventListener('click', hideModal);
             window.addEventListener('click', function(event) {
                 if (event.target === bookModal) {
-                    closeBookModal();
+                    hideModal();
                 }
             });
 
-            // Handle edit and delete buttons
-            document.querySelectorAll('.action-buttons button').forEach(button => {
-                button.addEventListener('click', function() {
-                    const bookId = this.getAttribute('data-book-id');
-                    const action = this.getAttribute('data-action');
+            // Add debug logging
+            console.log('Books data:', {
+                count: '${books != null ? books.size() : 0}',
+                page: '${currentPage}',
+                totalPages: '${noOfPages}'
+            });
+            
+            // Handle form submission
+            bookForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+                const bookId = document.getElementById('bookId').value;
+                
+                // Add action parameter based on whether it's an edit or add operation
+                formData.append('action', bookId ? 'edit' : 'add');
+
+                try {
+                    console.log('Submitting form data...');
+                    const response = await fetch(window.ctx + '/books', {
+                        method: 'POST',
+                        body: formData
+                    });
                     
-                    if (!bookId) {
-                        alert('No book selected!');
-                        return;
+                    let result;
+                    const contentType = response.headers.get("content-type");
+                    console.log('Response content type:', contentType);
+                    
+                    try {
+                        const text = await response.text();
+                        console.log('Response text:', text);
+                        result = JSON.parse(text);
+                    } catch (e) {
+                        console.error('Error parsing response:', e);
+                        throw new Error('Invalid response format from server');
                     }
 
-                    if (action === 'edit') {
-                        fetch(`/BookStore/admin/books?bookId=${bookId}`)
-                            .then(response => {
-                                if (!response.ok) throw new Error('Failed to fetch book');
-                                return response.json();
-                            })
-                            .then(book => {
-                                document.getElementById('modalTitle').textContent = 'Edit Book';
-                                document.getElementById('bookId').value = book.id;
-                                document.getElementById('bookName').value = book.title;
-                                document.getElementById('writerName').value = book.author;
-                                document.getElementById('price').value = book.price;
-                                document.getElementById('stock').value = book.stock;
-                                document.getElementById('description').value = book.description;
-                                document.getElementById('status').value = book.status;
-                                bookModal.style.display = 'block';
-                            })
-                            .catch(error => {
-                                alert('Failed to fetch book details');
-                            });
+                    if (!response.ok) {
+                        throw new Error(result.error || 'Failed to save book');
                     }
 
-                    if (action === 'delete') {
-                        if (bookId && confirm('Are you sure you want to delete this book?')) {
-                            fetch(`/BookStore/admin/books?bookId=${bookId}`, {
-                                method: 'DELETE'
-                            })
-                            .then(response => {
-                                if (response.ok) {
-                                    location.reload();
-                                } else {
-                                    throw new Error('Failed to delete book');
-                                }
-                            })
-                            .catch(error => {
-                                alert('Failed to delete book');
+                    AdminDashboard.showNotification('success', result.message || 'Book saved successfully');
+                    hideModal();
+                    window.location.reload();
+                } catch (error) {
+                    console.error('Error:', error);
+                    AdminDashboard.showNotification('error', error.message);
+                }
+            });
+
+            // Edit book function
+            window.editBook = async function(id) {
+                try {
+                    const response = await fetch(window.ctx + '/books?bookId=' + id, {
+                        headers: { 'Accept': 'application/json' }
+                    });
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch book details');
+                    }
+                    const book = await response.json();
+                    document.getElementById('modalTitle').textContent = 'Edit Book';
+                    document.getElementById('bookId').value = book.bookId;
+                    document.getElementById('bookName').value = book.bookName;
+                    document.getElementById('writerName').value = book.writerName;
+                    document.getElementById('price').value = book.price;
+                    document.getElementById('stock').value = book.stock;
+                    document.getElementById('description').value = book.description || '';
+                    document.getElementById('status').value = book.status;
+                    document.getElementById('category').value = book.categoryId;
+                    if (book.categories) {
+                        const categoriesSelect = document.getElementById('categories');
+                        if (categoriesSelect) {
+                            Array.from(categoriesSelect.options).forEach(option => option.selected = false);
+                            book.categories.forEach(categoryId => {
+                                const option = categoriesSelect.querySelector(`option[value="${categoryId}"]`);
+                                if (option) option.selected = true;
                             });
                         }
                     }
-                });
-            });
+                    showModal();
+                } catch (error) {
+                    console.error('Error:', error);
+                    AdminDashboard.showNotification('error', 'Failed to load book details');
+                }
+            };
 
-            // Add Book Button
-            addBookBtn.addEventListener('click', function() {
-                document.getElementById('modalTitle').textContent = 'Add New Book';
-                bookForm.reset();
-                document.getElementById('bookId').value = '';
-                bookModal.style.display = 'block';
-            });
-
-            // Save Book
-            saveBtn.addEventListener('click', function() {
-                const formData = new FormData(bookForm);
-                const bookId = document.getElementById('bookId').value;
-                const action = bookId ? 'edit' : 'add';
-                
-                // Add action parameter
-                formData.append('action', action);
-                if (bookId) {
-                    formData.append('bookId', bookId);
+            // Delete book function
+            window.deleteBook = async function(id) {
+                if (!id) {
+                    AdminDashboard.showNotification('error', 'Invalid book ID');
+                    return;
                 }
 
-                fetch('/BookStore/admin/books', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => {
-                    if (response.ok) {
-                        closeBookModal();
-                        location.reload();
-                    } else {
-                        throw new Error('Failed to save book');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error saving book:', error);
-                    alert('Failed to save book');
-                });
-            });
+                if (!confirm('Are you sure you want to delete this book?')) {
+                    return;
+                }
 
-            // Close Modal buttons
-            closeModal.addEventListener('click', closeBookModal);
-            cancelBtn.addEventListener('click', closeBookModal);
+                try {
+                    const response = await fetch(window.ctx + '/books?bookId=' + id, {
+                        method: 'DELETE',
+                        headers: { 'Accept': 'application/json' }
+                    });
+
+                    let result;
+                    try {
+                        const text = await response.text();
+                        result = text ? JSON.parse(text) : { message: 'Book deleted successfully' };
+                    } catch (e) {
+                        console.error('Error parsing response:', e);
+                        result = { message: 'Book deleted successfully' };
+                    }
+
+                    if (!response.ok) {
+                        throw new Error(result.error || 'Failed to delete book');
+                    }
+
+                    AdminDashboard.showNotification('success', result.message);
+                    window.location.reload();
+                } catch (error) {
+                    console.error('Error:', error);
+                    AdminDashboard.showNotification('error', error.message);
+                }
+            };
+
+            function previewImage(input) {
+                const preview = document.getElementById('imagePreview');
+                preview.innerHTML = '';
+                
+                if (input.files && input.files[0]) {
+                    const reader = new FileReader();
+                    
+                    reader.onload = function(e) {
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.style.maxWidth = '200px';
+                        img.style.maxHeight = '200px';
+                        img.style.marginTop = '10px';
+                        preview.appendChild(img);
+                    }
+                    
+                    reader.readAsDataURL(input.files[0]);
+                }
+            }
         });
     </script>
 </body>

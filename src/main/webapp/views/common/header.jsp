@@ -32,9 +32,9 @@
             </div>
             <div class="header-right">
                 <div class="cart-icon">
-                    <a href="${pageContext.request.contextPath}/cart">
+                    <a href="${pageContext.request.contextPath}/cart-page">
                         <i class="fas fa-shopping-cart"></i>
-                        <span class="cart-count">0</span>
+                        <span class="cart-count" id="cart-count">0</span>
                     </a>
                 </div>
                 <div class="user-account">
@@ -99,9 +99,9 @@
     <nav class="site-nav">
         <div class="container">
             <ul class="nav-menu">
-                <li><a href="${pageContext.request.contextPath}/" ${currentPage eq 'home' ? 'class="active"' : ''}>Home</a></li>
+                <li><a href="${pageContext.request.contextPath}/" ${currentPage == 'home' ? 'class="active"' : ''}>Home</a></li>
                 <li class="has-dropdown">
-                    <a href="#" ${currentPage eq 'category' ? 'class="active"' : ''}>Categories <i class="fas fa-chevron-down"></i></a>
+                    <a href="#" ${currentPage == 'category' ? 'class="active"' : ''}>Categories <i class="fas fa-chevron-down"></i></a>
                     <ul class="dropdown">
                         <li><a href="${pageContext.request.contextPath}/category/fiction">Fiction</a></li>
                         <li><a href="${pageContext.request.contextPath}/category/non-fiction">Non-Fiction</a></li>
@@ -110,11 +110,11 @@
                         <li><a href="${pageContext.request.contextPath}/category/nepali">Nepali Literature</a></li>
                     </ul>
                 </li>
-                <li><a href="${pageContext.request.contextPath}/new-releases" ${currentPage eq 'new-releases' ? 'class="active"' : ''}>New Releases</a></li>
-                <li><a href="${pageContext.request.contextPath}/bestsellers" ${currentPage eq 'bestsellers' ? 'class="active"' : ''}>Bestsellers</a></li>
-                <li><a href="${pageContext.request.contextPath}/deals" ${currentPage eq 'deals' ? 'class="active"' : ''}>Deals & Offers</a></li>
-                <li><a href="${pageContext.request.contextPath}/about" ${currentPage eq 'about' ? 'class="active"' : ''}>About Us</a></li>
-                <li><a href="${pageContext.request.contextPath}/contact" ${currentPage eq 'contact' ? 'class="active"' : ''}>Contact</a></li>
+                <li><a href="${pageContext.request.contextPath}/new-releases" ${currentPage == 'new-releases' ? 'class="active"' : ''}>New Releases</a></li>
+                <li><a href="${pageContext.request.contextPath}/bestsellers" ${currentPage == 'bestsellers' ? 'class="active"' : ''}>Bestsellers</a></li>
+                <li><a href="${pageContext.request.contextPath}/deals" ${currentPage == 'deals' ? 'class="active"' : ''}>Deals & Offers</a></li>
+                <li><a href="${pageContext.request.contextPath}/about" ${currentPage == 'about' ? 'class="active"' : ''}>About Us</a></li>
+                <li><a href="${pageContext.request.contextPath}/contact" ${currentPage == 'contact' ? 'class="active"' : ''}>Contact</a></li>
             </ul>
         </div>
     </nav>
@@ -158,7 +158,7 @@
                 </li>
             </c:when>
         </c:choose>
-        <li><a href="${pageContext.request.contextPath}/" ${currentPage eq 'home' ? 'class="active"' : ''}>Home</a></li>
+        <li><a href="${pageContext.request.contextPath}/" ${currentPage == 'home' ? 'class="active"' : ''}>Home</a></li>
         <li class="has-dropdown">
             <a href="#">Categories <i class="fas fa-chevron-down"></i></a>
             <ul class="dropdown">
@@ -169,11 +169,11 @@
                 <li><a href="${pageContext.request.contextPath}/category/nepali">Nepali Literature</a></li>
             </ul>
         </li>
-        <li><a href="${pageContext.request.contextPath}/new-releases" ${currentPage eq 'new-releases' ? 'class="active"' : ''}>New Releases</a></li>
-        <li><a href="${pageContext.request.contextPath}/bestsellers" ${currentPage eq 'bestsellers' ? 'class="active"' : ''}>Bestsellers</a></li>
-        <li><a href="${pageContext.request.contextPath}/deals" ${currentPage eq 'deals' ? 'class="active"' : ''}>Deals & Offers</a></li>
-        <li><a href="${pageContext.request.contextPath}/about" ${currentPage eq 'about' ? 'class="active"' : ''}>About Us</a></li>
-        <li><a href="${pageContext.request.contextPath}/contact" ${currentPage eq 'contact' ? 'class="active"' : ''}>Contact</a></li>
+        <li><a href="${pageContext.request.contextPath}/new-releases" ${currentPage == 'new-releases' ? 'class="active"' : ''}>New Releases</a></li>
+        <li><a href="${pageContext.request.contextPath}/bestsellers" ${currentPage == 'bestsellers' ? 'class="active"' : ''}>Bestsellers</a></li>
+        <li><a href="${pageContext.request.contextPath}/deals" ${currentPage == 'deals' ? 'class="active"' : ''}>Deals & Offers</a></li>
+        <li><a href="${pageContext.request.contextPath}/about" ${currentPage == 'about' ? 'class="active"' : ''}>About Us</a></li>
+        <li><a href="${pageContext.request.contextPath}/contact" ${currentPage == 'contact' ? 'class="active"' : ''}>Contact</a></li>
         <li class="divider"></li>
         <c:choose>
             <c:when test="${not empty sessionScope.user}">
@@ -188,3 +188,18 @@
         </c:choose>
     </ul>
 </div>
+
+<script>
+function updateCartCount() {
+    fetch('${pageContext.request.contextPath}/cart')
+        .then(response => response.json())
+        .then(data => {
+            const count = data.reduce((total, item) => total + item.quantity, 0);
+            document.getElementById('cart-count').textContent = count;
+        })
+        .catch(error => console.error('Error updating cart count:', error));
+}
+
+// Update cart count on page load
+document.addEventListener('DOMContentLoaded', updateCartCount);
+</script>

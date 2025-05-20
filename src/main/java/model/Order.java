@@ -1,23 +1,23 @@
 package model;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Order {
     private int orderId;
     private Timestamp orderDate;
-    private String status;
+    private String status; // Pending, Processing, Shipped, Delivered, Cancelled
+    private String shippingAddress;
+    private String paymentMethod;
+    private double totalAmount;
     private int userId;
-    private List<OrderItem> items;
+    private User user;
+    private List<OrderItem> orderItems;
+    private String paymentStatus;
 
     public Order() {
-    }
-
-    public Order(int orderId, Timestamp orderDate, String status, int userId) {
-        this.orderId = orderId;
-        this.orderDate = orderDate;
-        this.status = status;
-        this.userId = userId;
+        this.orderItems = new ArrayList<>();
     }
 
     public int getOrderId() {
@@ -44,6 +44,30 @@ public class Order {
         this.status = status;
     }
 
+    public String getShippingAddress() {
+        return shippingAddress;
+    }
+
+    public void setShippingAddress(String shippingAddress) {
+        this.shippingAddress = shippingAddress;
+    }
+
+    public String getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(String paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+
+    public double getTotalAmount() {
+        return totalAmount;
+    }
+
+    public void setTotalAmount(double totalAmount) {
+        this.totalAmount = totalAmount;
+    }
+
     public int getUserId() {
         return userId;
     }
@@ -52,17 +76,26 @@ public class Order {
         this.userId = userId;
     }
 
-    public List<OrderItem> getItems() {
-        return items;
+    public User getUser() {
+        return user;
     }
 
-    public void setItems(List<OrderItem> items) {
-        this.items = items;
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public List<OrderItem> getOrderItems() {
+        return orderItems;
+    }
+
+    public void setOrderItems(List<OrderItem> orderItems) {
+        this.orderItems = orderItems;
     }
 
     @Override
     public String toString() {
-        return "Order [orderId=" + orderId + ", orderDate=" + orderDate + ", status=" + status + ", userId=" + userId
-                + "]";
+        return "Order [orderId=" + orderId + ", userId=" + userId + ", orderDate=" + orderDate + ", status=" + status
+                + ", shippingAddress=" + shippingAddress + ", paymentMethod=" + paymentMethod + ", totalAmount="
+                + totalAmount + "]";
     }
 }

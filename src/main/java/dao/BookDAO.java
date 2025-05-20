@@ -16,80 +16,102 @@ import utils.DBUtil;
 
 public class BookDAO {
 
-    private static final String INSERT_BOOK = "INSERT INTO Book (Book_name, price, writer_name, picture) VALUES (?, ?, ?, ?)";
-    private static final String UPDATE_BOOK = "UPDATE Book SET Book_name = ?, price = ?, writer_name = ?, picture = ?, status = ?, stock = ?, description = ? WHERE Book_ID = ?";
-    private static final String DELETE_BOOK = "DELETE FROM Book WHERE Book_ID = ?";
-    private static final String GET_BOOK_BY_ID = "SELECT * FROM Book WHERE Book_ID = ?";
-    private static final String GET_ALL_BOOKS = "SELECT * FROM Book ORDER BY Book_name";
-    private static final String SEARCH_BOOKS = "SELECT * FROM Book WHERE Book_name LIKE ? OR writer_name LIKE ?";
+    private static final String INSERT_BOOK = "INSERT INTO books (name, price, writer, image_url, status, stock, description) VALUES (?, ?, ?, ?, ?, ?, ?)";
+    private static final String UPDATE_BOOK = "UPDATE books SET name = ?, price = ?, writer = ?, image_url = ?, status = ?, stock = ?, description = ? WHERE id = ?";
+    private static final String DELETE_BOOK = "DELETE FROM books WHERE id = ?";
+    private static final String GET_BOOK_BY_ID = "SELECT * FROM books WHERE id = ?";
+    private static final String GET_ALL_BOOKS = "SELECT * FROM books ORDER BY name";
+    private static final String COUNT_BOOKS = "SELECT COUNT(*) FROM book";
+    private static final String GET_BOOKS_BY_CATEGORY = "SELECT b.* FROM book b JOIN book_category bc ON b.Book_ID = bc.Book_ID WHERE bc.Category_ID = ?";
+    private static final String GET_BOOKS_BY_WRITER = "SELECT * FROM book WHERE writer_name = ?";
+    private static final String GET_BOOKS_BY_STATUS = "SELECT * FROM book WHERE status = ?";
+    private static final String GET_BOOKS_BY_PRICE_RANGE = "SELECT * FROM book WHERE price BETWEEN ? AND ?";
+    private static final String GET_BOOKS_BY_STOCK = "SELECT * FROM book WHERE stock <= ?";
+    private static final String GET_BOOKS_BY_SEARCH = "SELECT * FROM book WHERE Book_name LIKE ? OR writer_name LIKE ? OR description LIKE ?";
+    private static final String GET_BOOKS_BY_SEARCH_WITH_CATEGORY = "SELECT b.* FROM books b JOIN book_category bc ON b.id = bc.book_id WHERE bc.category_id = ? AND (b.name LIKE ? OR b.writer LIKE ? OR b.description LIKE ?)";
+    private static final String GET_BOOKS_BY_SEARCH_WITH_WRITER = "SELECT * FROM books WHERE writer = ? AND (name LIKE ? OR description LIKE ?)";
+    private static final String GET_BOOKS_BY_SEARCH_WITH_STATUS = "SELECT * FROM books WHERE status = ? AND (name LIKE ? OR writer LIKE ? OR description LIKE ?)";
+    private static final String GET_BOOKS_BY_SEARCH_WITH_PRICE_RANGE = "SELECT * FROM books WHERE price BETWEEN ? AND ? AND (name LIKE ? OR writer LIKE ? OR description LIKE ?)";
+    private static final String GET_BOOKS_BY_SEARCH_WITH_STOCK = "SELECT * FROM books WHERE stock <= ? AND (name LIKE ? OR writer LIKE ? OR description LIKE ?)";
+    private static final String GET_BOOKS_BY_SEARCH_WITH_CATEGORY_AND_WRITER = "SELECT b.* FROM books b JOIN book_category bc ON b.id = bc.book_id WHERE bc.category_id = ? AND b.writer = ? AND (b.name LIKE ? OR b.description LIKE ?)";
+    private static final String GET_BOOKS_BY_SEARCH_WITH_CATEGORY_AND_STATUS = "SELECT b.* FROM books b JOIN book_category bc ON b.id = bc.book_id WHERE bc.category_id = ? AND b.status = ? AND (b.name LIKE ? OR b.writer LIKE ? OR b.description LIKE ?)";
+    private static final String GET_BOOKS_BY_SEARCH_WITH_CATEGORY_AND_PRICE_RANGE = "SELECT b.* FROM books b JOIN book_category bc ON b.id = bc.book_id WHERE bc.category_id = ? AND b.price BETWEEN ? AND ? AND (b.name LIKE ? OR b.writer LIKE ? OR b.description LIKE ?)";
+    private static final String GET_BOOKS_BY_SEARCH_WITH_CATEGORY_AND_STOCK = "SELECT b.* FROM books b JOIN book_category bc ON b.id = bc.book_id WHERE bc.category_id = ? AND b.stock <= ? AND (b.name LIKE ? OR b.writer LIKE ? OR b.description LIKE ?)";
+    private static final String GET_BOOKS_BY_SEARCH_WITH_WRITER_AND_STATUS = "SELECT * FROM books WHERE writer = ? AND status = ? AND (name LIKE ? OR description LIKE ?)";
+    private static final String GET_BOOKS_BY_SEARCH_WITH_WRITER_AND_PRICE_RANGE = "SELECT * FROM books WHERE writer = ? AND price BETWEEN ? AND ? AND (name LIKE ? OR description LIKE ?)";
+    private static final String GET_BOOKS_BY_SEARCH_WITH_WRITER_AND_STOCK = "SELECT * FROM books WHERE writer = ? AND stock <= ? AND (name LIKE ? OR description LIKE ?)";
+    private static final String GET_BOOKS_BY_SEARCH_WITH_STATUS_AND_PRICE_RANGE = "SELECT * FROM books WHERE status = ? AND price BETWEEN ? AND ? AND (name LIKE ? OR writer LIKE ? OR description LIKE ?)";
+    private static final String GET_BOOKS_BY_SEARCH_WITH_STATUS_AND_STOCK = "SELECT * FROM books WHERE status = ? AND stock <= ? AND (name LIKE ? OR writer LIKE ? OR description LIKE ?)";
+    private static final String GET_BOOKS_BY_SEARCH_WITH_PRICE_RANGE_AND_STOCK = "SELECT * FROM books WHERE price BETWEEN ? AND ? AND stock <= ? AND (name LIKE ? OR writer LIKE ? OR description LIKE ?)";
+    private static final String GET_BOOKS_BY_SEARCH_WITH_CATEGORY_AND_WRITER_AND_STATUS = "SELECT b.* FROM books b JOIN book_category bc ON b.id = bc.book_id WHERE bc.category_id = ? AND b.writer = ? AND b.status = ? AND (b.name LIKE ? OR b.description LIKE ?)";
+    private static final String GET_BOOKS_BY_SEARCH_WITH_CATEGORY_AND_WRITER_AND_PRICE_RANGE = "SELECT b.* FROM books b JOIN book_category bc ON b.id = bc.book_id WHERE bc.category_id = ? AND b.writer = ? AND b.price BETWEEN ? AND ? AND (b.name LIKE ? OR b.description LIKE ?)";
+    private static final String GET_BOOKS_BY_SEARCH_WITH_CATEGORY_AND_WRITER_AND_STOCK = "SELECT b.* FROM books b JOIN book_category bc ON b.id = bc.book_id WHERE bc.category_id = ? AND b.writer = ? AND b.stock <= ? AND (b.name LIKE ? OR b.description LIKE ?)";
+    private static final String GET_BOOKS_BY_SEARCH_WITH_CATEGORY_AND_STATUS_AND_PRICE_RANGE = "SELECT b.* FROM books b JOIN book_category bc ON b.id = bc.book_id WHERE bc.category_id = ? AND b.status = ? AND b.price BETWEEN ? AND ? AND (b.name LIKE ? OR b.writer LIKE ? OR b.description LIKE ?)";
+    private static final String GET_BOOKS_BY_SEARCH_WITH_CATEGORY_AND_STATUS_AND_STOCK = "SELECT b.* FROM books b JOIN book_category bc ON b.id = bc.book_id WHERE bc.category_id = ? AND b.status = ? AND b.stock <= ? AND (b.name LIKE ? OR b.writer LIKE ? OR b.description LIKE ?)";
+    private static final String GET_BOOKS_BY_SEARCH_WITH_CATEGORY_AND_PRICE_RANGE_AND_STOCK = "SELECT b.* FROM books b JOIN book_category bc ON b.id = bc.book_id WHERE bc.category_id = ? AND b.price BETWEEN ? AND ? AND b.stock <= ? AND (b.name LIKE ? OR b.writer LIKE ? OR b.description LIKE ?)";
+    private static final String GET_BOOKS_BY_SEARCH_WITH_WRITER_AND_STATUS_AND_PRICE_RANGE = "SELECT * FROM books WHERE writer = ? AND status = ? AND price BETWEEN ? AND ? AND (name LIKE ? OR description LIKE ?)";
+    private static final String GET_BOOKS_BY_SEARCH_WITH_WRITER_AND_STATUS_AND_STOCK = "SELECT * FROM books WHERE writer = ? AND status = ? AND stock <= ? AND (name LIKE ? OR description LIKE ?)";
+    private static final String GET_BOOKS_BY_SEARCH_WITH_WRITER_AND_PRICE_RANGE_AND_STOCK = "SELECT * FROM books WHERE writer = ? AND price BETWEEN ? AND ? AND stock <= ? AND (name LIKE ? OR description LIKE ?)";
+    private static final String GET_BOOKS_BY_SEARCH_WITH_STATUS_AND_PRICE_RANGE_AND_STOCK = "SELECT * FROM books WHERE status = ? AND price BETWEEN ? AND ? AND stock <= ? AND (name LIKE ? OR writer LIKE ? OR description LIKE ?)";
+    private static final String GET_BOOKS_BY_SEARCH_WITH_ALL = "SELECT b.* FROM books b JOIN book_category bc ON b.id = bc.book_id WHERE bc.category_id = ? AND b.writer = ? AND b.status = ? AND b.price BETWEEN ? AND ? AND b.stock <= ? AND (b.name LIKE ? OR b.description LIKE ?)";
 
-    public BookDAO() {
+    private Connection conn;
+    private PreparedStatement pstmt;
+    private ResultSet rs;
+
+    public BookDAO() throws SQLException {
+        this.conn = DBUtil.getConnection();
     }
 
-    public boolean createBook(Book book, List<Integer> categoryIds) throws SQLException {
-        Connection conn = null;
-        try {
-            conn = DBUtil.getConnection();
-            conn.setAutoCommit(false);
+    public BookDAO(Connection conn) {
+        this.conn = conn;
+    }
 
-            // Insert book
-            String sql = "INSERT INTO Book (Book_name, price, writer_name, picture, status, stock, description) VALUES (?, ?, ?, ?, ?, ?, ?)";
-            try (PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-                stmt.setString(1, book.getBookName());
-                stmt.setDouble(2, book.getPrice());
-                stmt.setString(3, book.getWriterName());
-                stmt.setString(4, book.getPicture());
-                stmt.setString(5, book.getStatus());
-                stmt.setInt(6, book.getStock());
-                stmt.setString(7, book.getDescription());
+    public Book createBook(Book book) throws SQLException {
+        String sql = "INSERT INTO book (Book_name, price, writer_name, picture, status, stock, description) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        try (PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            stmt.setString(1, book.getBookName());
+            stmt.setDouble(2, book.getPrice());
+            stmt.setString(3, book.getWriterName());
+            stmt.setString(4, book.getPicture());
+            stmt.setString(5, book.getStatus());
+            stmt.setInt(6, book.getStock());
+            stmt.setString(7, book.getDescription());
 
-                int affectedRows = stmt.executeUpdate();
-                if (affectedRows == 0) {
-                    conn.rollback();
-                    return false;
-                }
+            int affectedRows = stmt.executeUpdate();
+            if (affectedRows == 0) {
+                throw new SQLException("Creating book failed, no rows affected.");
+            }
 
-                // Get the generated book ID
-                try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
-                    if (generatedKeys.next()) {
-                        int bookId = generatedKeys.getInt(1);
-                        book.setBookId(bookId);
-
-                        // Insert book-category relationships
-                        if (categoryIds != null && !categoryIds.isEmpty()) {
-                            String categorySql = "INSERT INTO book_category (Book_ID, Category_ID) VALUES (?, ?)";
-                            try (PreparedStatement categoryStmt = conn.prepareStatement(categorySql)) {
-                                for (int categoryId : categoryIds) {
-                                    categoryStmt.setInt(1, bookId);
-                                    categoryStmt.setInt(2, categoryId);
-                                    categoryStmt.addBatch();
-                                }
-                                categoryStmt.executeBatch();
-                            }
-                        }
-                    }
+            try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    book.setBookId(generatedKeys.getInt(1));
+                } else {
+                    throw new SQLException("Creating book failed, no ID obtained.");
                 }
             }
-
-            conn.commit();
-            return true;
-        } catch (SQLException e) {
-            if (conn != null) {
-                conn.rollback();
-            }
-            throw e;
-        } finally {
-            if (conn != null) {
-                conn.setAutoCommit(true);
-                conn.close();
-            }
+            return book;
         }
     }
 
+    public Book getBook(int bookId) throws SQLException {
+        String sql = "SELECT * FROM book WHERE Book_ID = ?";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, bookId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    Book book = mapResultSetToBook(rs);
+                    book.setCategories(getCategoriesForBook(book.getBookId()));
+                    return book;
+                }
+            }
+        }
+        return null;
+    }
+
     public boolean updateBook(Book book) throws SQLException {
-        String sql = "UPDATE Book SET Book_name = ?, price = ?, writer_name = ?, picture = ?, status = ?, stock = ?, description = ? WHERE Book_ID = ?";
-        try (Connection conn = DBUtil.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(sql)) {
+        String sql = "UPDATE book SET Book_name = ?, price = ?, writer_name = ?, picture = ?, status = ?, stock = ?, description = ? WHERE Book_ID = ?";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, book.getBookName());
             stmt.setDouble(2, book.getPrice());
             stmt.setString(3, book.getWriterName());
@@ -102,508 +124,543 @@ public class BookDAO {
         }
     }
 
-    public boolean deleteBook(int bookId) {
-        try (Connection conn = DBUtil.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(DELETE_BOOK)) {
-
+    public boolean deleteBook(int bookId) throws SQLException {
+        String sql = "DELETE FROM book WHERE Book_ID = ?";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, bookId);
             return stmt.executeUpdate() > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
         }
     }
 
-    public Book getBookById(int bookId) throws SQLException {
-        String sql = "SELECT * FROM Book WHERE Book_ID = ?";
-        try (Connection conn = DBUtil.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setInt(1, bookId);
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    Book book = new Book();
-                    book.setBookId(rs.getInt("Book_ID"));
-                    book.setBookName(rs.getString("Book_name"));
-                    book.setPrice(rs.getDouble("price"));
-                    book.setWriterName(rs.getString("writer_name"));
-                    book.setPicture(rs.getString("picture"));
-                    book.setStatus(rs.getString("status"));
-                    book.setStock(rs.getInt("stock"));
-                    book.setDescription(rs.getString("description"));
-                    return book;
-                }
-            }
-        }
-        return null;
-    }
-
-    public List<Book> getAllBooks() {
+    public List<Book> getAllBooks() throws SQLException {
         List<Book> books = new ArrayList<>();
-
-        try (Connection conn = DBUtil.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(GET_ALL_BOOKS)) {
-
-            ResultSet rs = stmt.executeQuery();
-
+        String sql = "SELECT * FROM book ORDER BY Book_name";
+        try (PreparedStatement stmt = conn.prepareStatement(sql);
+                ResultSet rs = stmt.executeQuery()) {
             while (rs.next()) {
                 Book book = new Book();
                 book.setBookId(rs.getInt("Book_ID"));
                 book.setBookName(rs.getString("Book_name"));
-                book.setPrice(rs.getDouble("price"));
                 book.setWriterName(rs.getString("writer_name"));
+                book.setPrice(rs.getDouble("price"));
                 book.setPicture(rs.getString("picture"));
+                book.setStatus(rs.getString("status"));
+                book.setStock(rs.getInt("stock"));
+                book.setDescription(rs.getString("description"));
                 books.add(book);
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
         }
         return books;
     }
 
-    public List<Book> searchBooks(String query) {
-        List<Book> books = new ArrayList<>();
-
-        try (Connection conn = DBUtil.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(SEARCH_BOOKS)) {
-
-            String searchPattern = "%" + query + "%";
-            stmt.setString(1, searchPattern);
-            stmt.setString(2, searchPattern);
-
-            ResultSet rs = stmt.executeQuery();
-
-            while (rs.next()) {
-                Book book = new Book();
-                book.setBookId(rs.getInt("Book_ID"));
-                book.setBookName(rs.getString("Book_name"));
-                book.setPrice(rs.getDouble("price"));
-                book.setWriterName(rs.getString("writer_name"));
-                book.setPicture(rs.getString("picture"));
-                books.add(book);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return books;
-    }
-
-    // Get books for new releases page with pagination, sorting, and filtering
-    public List<Book> getNewReleaseBooks(int page, int itemsPerPage, String sortBy, String categoryFilter)
-            throws SQLException {
-        List<Book> books = new ArrayList<>();
-        StringBuilder sql = new StringBuilder("SELECT b.* FROM Book b");
-
-        if (categoryFilter != null && !categoryFilter.isEmpty() && !categoryFilter.equals("all")) {
-            sql.append(" JOIN Book_Category bc ON b.Book_ID = bc.Book_ID");
-            sql.append(" JOIN Category c ON bc.Category_ID = c.Category_ID");
-            sql.append(" WHERE c.category_name = ?");
-        }
-
-        sql.append(" ORDER BY ");
-        if (sortBy != null) {
-            switch (sortBy) {
-                case "price-low":
-                    sql.append("b.price ASC");
-                    break;
-                case "price-high":
-                    sql.append("b.price DESC");
-                    break;
-                case "name-asc":
-                    sql.append("b.Book_name ASC");
-                    break;
-                case "name-desc":
-                    sql.append("b.Book_name DESC");
-                    break;
-                case "date-asc":
-                    sql.append("b.Book_ID ASC");
-                    break;
-                default:
-                    sql.append("b.Book_ID DESC");
-            }
-        } else {
-            sql.append("b.Book_ID DESC");
-        }
-
-        sql.append(" LIMIT ? OFFSET ?");
-
-        try (Connection conn = DBUtil.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(sql.toString())) {
-
-            int paramIndex = 1;
-            if (categoryFilter != null && !categoryFilter.isEmpty() && !categoryFilter.equals("all")) {
-                stmt.setString(paramIndex++, categoryFilter);
-            }
-
-            stmt.setInt(paramIndex++, itemsPerPage);
-            stmt.setInt(paramIndex, (page - 1) * itemsPerPage);
-
-            ResultSet rs = stmt.executeQuery();
-            while (rs.next()) {
-                books.add(extractBookFromResultSet(rs));
-            }
-        }
-        return books;
-    }
-
-    // Count total number of books for new releases page with filtering
-    public int countNewReleaseBooks(String categoryFilter) throws SQLException {
-        StringBuilder sql = new StringBuilder("SELECT COUNT(*) AS total FROM Book b");
-
-        if (categoryFilter != null && !categoryFilter.isEmpty() && !categoryFilter.equals("all")) {
-            sql.append(" JOIN Book_Category bc ON b.book_id = bc.book_id");
-            sql.append(" JOIN Category c ON bc.category_id = c.category_id");
-            sql.append(" WHERE c.category_name = ?");
-        }
-
-        try (Connection conn = DBUtil.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(sql.toString())) {
-
-            if (categoryFilter != null && !categoryFilter.isEmpty() && !categoryFilter.equals("all")) {
-                stmt.setString(1, categoryFilter);
-            }
-
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
-                return rs.getInt("total");
-            }
-        }
-        return 0;
-    }
-
-    // Get books by category with pagination, sorting, and price filtering
-    public List<Book> getBooksByCategory(int categoryId, int page, int itemsPerPage, String sortBy, String priceRange)
-            throws SQLException {
-        List<Book> books = new ArrayList<>();
-        StringBuilder sql = new StringBuilder("SELECT b.* FROM Book b");
-        sql.append(" JOIN Book_Category bc ON b.book_id = bc.book_id");
-        sql.append(" WHERE bc.category_id = ?");
-
-        if (priceRange != null && !priceRange.isEmpty()) {
-            String[] prices = priceRange.split("-");
-            if (prices.length == 2) {
-                try {
-                    double minPrice = Double.parseDouble(prices[0]);
-                    double maxPrice = Double.parseDouble(prices[1]);
-                    sql.append(" AND b.price BETWEEN ? AND ?");
-                } catch (NumberFormatException e) {
-                    // Invalid price format, ignore filter
-                }
-            }
-        }
-
-        sql.append(" ORDER BY ");
-        if (sortBy != null) {
-            switch (sortBy) {
-                case "price-low":
-                    sql.append("b.price ASC");
-                    break;
-                case "price-high":
-                    sql.append("b.price DESC");
-                    break;
-                case "name-asc":
-                    sql.append("b.book_name ASC");
-                    break;
-                case "name-desc":
-                    sql.append("b.book_name DESC");
-                    break;
-                default:
-                    sql.append("b.book_id DESC");
-            }
-        } else {
-            sql.append("b.book_id DESC");
-        }
-
-        sql.append(" LIMIT ? OFFSET ?");
-
-        try (Connection conn = DBUtil.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(sql.toString())) {
-
-            int paramIndex = 1;
-            stmt.setInt(paramIndex++, categoryId);
-
-            if (priceRange != null && !priceRange.isEmpty()) {
-                String[] prices = priceRange.split("-");
-                if (prices.length == 2) {
-                    try {
-                        double minPrice = Double.parseDouble(prices[0]);
-                        double maxPrice = Double.parseDouble(prices[1]);
-                        stmt.setDouble(paramIndex++, minPrice);
-                        stmt.setDouble(paramIndex++, maxPrice);
-                    } catch (NumberFormatException e) {
-                        // Invalid price format, ignore filter
-                    }
-                }
-            }
-
-            stmt.setInt(paramIndex++, itemsPerPage);
-            stmt.setInt(paramIndex, (page - 1) * itemsPerPage);
-
-            ResultSet rs = stmt.executeQuery();
-            while (rs.next()) {
-                books.add(extractBookFromResultSet(rs));
-            }
-        }
-        return books;
-    }
-
-    // Count total number of books by category with price filtering
-    public int countBooksByCategory(int categoryId, String priceRange) throws SQLException {
-        StringBuilder sql = new StringBuilder("SELECT COUNT(*) AS total FROM Book b");
-        sql.append(" JOIN Book_Category bc ON b.book_id = bc.book_id");
-        sql.append(" WHERE bc.category_id = ?");
-
-        if (priceRange != null && !priceRange.isEmpty()) {
-            String[] prices = priceRange.split("-");
-            if (prices.length == 2) {
-                try {
-                    double minPrice = Double.parseDouble(prices[0]);
-                    double maxPrice = Double.parseDouble(prices[1]);
-                    sql.append(" AND b.price BETWEEN ? AND ?");
-                } catch (NumberFormatException e) {
-                    // Invalid price format, ignore filter
-                }
-            }
-        }
-
-        try (Connection conn = DBUtil.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(sql.toString())) {
-
-            int paramIndex = 1;
-            stmt.setInt(paramIndex++, categoryId);
-
-            if (priceRange != null && !priceRange.isEmpty()) {
-                String[] prices = priceRange.split("-");
-                if (prices.length == 2) {
-                    try {
-                        double minPrice = Double.parseDouble(prices[0]);
-                        double maxPrice = Double.parseDouble(prices[1]);
-                        stmt.setDouble(paramIndex++, minPrice);
-                        stmt.setDouble(paramIndex++, maxPrice);
-                    } catch (NumberFormatException e) {
-                        // Invalid price format, ignore filter
-                    }
-                }
-            }
-
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
-                return rs.getInt("total");
-            }
-        }
-        return 0;
-    }
-
-    // Get recommended books
-    public List<Book> getRecommendedBooks(int limit) throws SQLException {
-        List<Book> books = new ArrayList<>();
-        String sql = "SELECT * FROM Book ORDER BY RAND() LIMIT ?";
-
-        try (Connection conn = DBUtil.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setInt(1, limit);
-            ResultSet rs = stmt.executeQuery();
-
-            while (rs.next()) {
-                books.add(extractBookFromResultSet(rs));
-            }
-        }
-        return books;
-    }
-
-    // Get total number of books
-    public int getTotalBooks() {
-        String sql = "SELECT COUNT(*) FROM Book";
-        try (Connection conn = DBUtil.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(sql);
+    public long getTotalBooks() throws SQLException {
+        try (PreparedStatement stmt = conn.prepareStatement(COUNT_BOOKS);
                 ResultSet rs = stmt.executeQuery()) {
             if (rs.next()) {
-                return rs.getInt(1);
+                return rs.getLong(1);
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
         }
         return 0;
     }
 
-    // Get top selling books
-    public List<Book> getTopSellingBooks(int limit) throws SQLException {
-        String sql = "SELECT b.*, COUNT(oi.order_id) as sales_count " +
-                "FROM Book b " +
-                "LEFT JOIN Order_Item oi ON b.Book_ID = oi.Book_ID " +
-                "GROUP BY b.Book_ID " +
-                "ORDER BY sales_count DESC " +
-                "LIMIT ?";
+    public List<Book> getBooksByCategory(long categoryId) throws SQLException {
         List<Book> books = new ArrayList<>();
-        try (Connection conn = DBUtil.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setInt(1, limit);
-            ResultSet rs = stmt.executeQuery();
-            while (rs.next()) {
-                books.add(extractBookFromResultSet(rs));
+        try (PreparedStatement stmt = conn.prepareStatement(GET_BOOKS_BY_CATEGORY)) {
+            stmt.setLong(1, categoryId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    books.add(mapResultSetToBook(rs));
+                }
             }
         }
         return books;
     }
 
-    // Helper method to add book categories
-    private void addBookCategories(int bookId, String categories) throws SQLException {
-        String[] categoryNames = categories.split(",");
-        String sql = "INSERT INTO Book_Category (Book_ID, Category_ID) " +
-                "SELECT ?, Category_ID FROM Category WHERE category_name = ?";
-
-        try (Connection conn = DBUtil.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(sql)) {
-            for (String categoryName : categoryNames) {
-                stmt.setInt(1, bookId);
-                stmt.setString(2, categoryName.trim());
-                stmt.addBatch();
+    public List<Book> getBooksByWriter(String writer) throws SQLException {
+        List<Book> books = new ArrayList<>();
+        try (PreparedStatement stmt = conn.prepareStatement(GET_BOOKS_BY_WRITER)) {
+            stmt.setString(1, writer);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    books.add(mapResultSetToBook(rs));
+                }
             }
-            stmt.executeBatch();
         }
+        return books;
     }
 
-    // Helper method to delete book categories
-    private void deleteBookCategories(int bookId) throws SQLException {
-        String sql = "DELETE FROM Book_Category WHERE Book_ID = ?";
-        try (Connection conn = DBUtil.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setInt(1, bookId);
-            stmt.executeUpdate();
+    public List<Book> getBooksByStatus(String status) throws SQLException {
+        List<Book> books = new ArrayList<>();
+        try (PreparedStatement stmt = conn.prepareStatement(GET_BOOKS_BY_STATUS)) {
+            stmt.setString(1, status);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    books.add(mapResultSetToBook(rs));
+                }
+            }
         }
+        return books;
     }
 
-    // Helper method to extract a Book object from ResultSet
-    private Book extractBookFromResultSet(ResultSet rs) throws SQLException {
+    public List<Book> getBooksByPriceRange(double minPrice, double maxPrice) throws SQLException {
+        List<Book> books = new ArrayList<>();
+        try (PreparedStatement stmt = conn.prepareStatement(GET_BOOKS_BY_PRICE_RANGE)) {
+            stmt.setDouble(1, minPrice);
+            stmt.setDouble(2, maxPrice);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    books.add(mapResultSetToBook(rs));
+                }
+            }
+        }
+        return books;
+    }
+
+    public List<Book> getBooksByStock(int maxStock) throws SQLException {
+        List<Book> books = new ArrayList<>();
+        try (PreparedStatement stmt = conn.prepareStatement(GET_BOOKS_BY_STOCK)) {
+            stmt.setInt(1, maxStock);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    books.add(mapResultSetToBook(rs));
+                }
+            }
+        }
+        return books;
+    }
+
+    public List<Book> searchBooks(String keyword) throws SQLException {
+        List<Book> books = new ArrayList<>();
+        try (PreparedStatement stmt = conn.prepareStatement(GET_BOOKS_BY_SEARCH)) {
+            String searchPattern = "%" + keyword + "%";
+            stmt.setString(1, searchPattern);
+            stmt.setString(2, searchPattern);
+            stmt.setString(3, searchPattern);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    books.add(mapResultSetToBook(rs));
+                }
+            }
+        }
+        return books;
+    }
+
+    private Book mapResultSetToBook(ResultSet rs) throws SQLException {
         Book book = new Book();
         book.setBookId(rs.getInt("Book_ID"));
         book.setBookName(rs.getString("Book_name"));
         book.setPrice(rs.getDouble("price"));
         book.setWriterName(rs.getString("writer_name"));
         book.setPicture(rs.getString("picture"));
+        book.setStatus(rs.getString("status"));
+        book.setStock(rs.getInt("stock"));
+        book.setDescription(rs.getString("description"));
         return book;
     }
 
-    public List<Map<String, Object>> getRecentActivities() {
-        List<Map<String, Object>> activities = new ArrayList<>();
-        String query = "SELECT b.*, c.category_name FROM Book b " +
-                "JOIN Category c ON b.category_id = c.category_id " +
-                "ORDER BY b.created_at DESC LIMIT 5";
-        try (Connection conn = DBUtil.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(query);
-                ResultSet rs = stmt.executeQuery()) {
-            while (rs.next()) {
-                Map<String, Object> activity = new HashMap<>();
-                activity.put("bookId", rs.getInt("book_id"));
-                activity.put("title", rs.getString("title"));
-                activity.put("category", rs.getString("category_name"));
-                activity.put("createdAt", rs.getTimestamp("created_at"));
-                activities.add(activity);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return activities;
-    }
+    public List<Book> getNewReleaseBooks(int page, int itemsPerPage, String sortBy, String categoryFilter)
+            throws SQLException {
+        List<Book> books = new ArrayList<>();
+        String sql = "SELECT b.* FROM book b " +
+                "LEFT JOIN book_category bc ON b.Book_ID = bc.Book_ID " +
+                "WHERE b.status = 'new-release' ";
 
-    public List<Map<String, Object>> getAllBooks(int offset, int limit) {
-        List<Map<String, Object>> books = new ArrayList<>();
-        String query = "SELECT b.*, GROUP_CONCAT(c.category_name) as categories " +
-                "FROM Book b " +
-                "LEFT JOIN Book_Category bc ON b.Book_ID = bc.Book_ID " +
-                "LEFT JOIN Category c ON bc.Category_ID = c.Category_ID " +
-                "GROUP BY b.Book_ID " +
-                "ORDER BY b.Book_ID LIMIT ? OFFSET ?";
+        if (categoryFilter != null && !categoryFilter.isEmpty()) {
+            sql += "AND bc.Category_ID = ? ";
+        }
+
+        sql += getSortClause(sortBy);
+        sql += "LIMIT ? OFFSET ?";
+
         try (Connection conn = DBUtil.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(query)) {
-            stmt.setInt(1, limit);
-            stmt.setInt(2, offset);
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            int paramIndex = 1;
+            if (categoryFilter != null && !categoryFilter.isEmpty()) {
+                stmt.setInt(paramIndex++, Integer.parseInt(categoryFilter));
+            }
+
+            stmt.setInt(paramIndex++, itemsPerPage);
+            stmt.setInt(paramIndex, (page - 1) * itemsPerPage);
+
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
-                    Map<String, Object> book = new HashMap<>();
-                    book.put("id", rs.getInt("Book_ID"));
-                    book.put("title", rs.getString("Book_name"));
-                    book.put("price", rs.getDouble("price"));
-                    book.put("writer", rs.getString("writer_name"));
-                    book.put("picture", rs.getString("picture"));
-                    book.put("categories", rs.getString("categories"));
-                    books.add(book);
+                    books.add(mapResultSetToBook(rs));
                 }
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
         }
         return books;
     }
 
-    public int getNoOfRecords() {
-        String query = "SELECT COUNT(*) FROM Book";
+    public int countNewReleaseBooks(String categoryFilter) throws SQLException {
+        String sql = "SELECT COUNT(DISTINCT b.Book_ID) FROM book b " +
+                "LEFT JOIN book_category bc ON b.Book_ID = bc.Book_ID " +
+                "WHERE b.status = 'new-release' ";
+
+        if (categoryFilter != null && !categoryFilter.isEmpty()) {
+            sql += "AND bc.Category_ID = ?";
+        }
+
         try (Connection conn = DBUtil.getConnection();
-                Statement stmt = conn.createStatement();
-                ResultSet rs = stmt.executeQuery(query)) {
-            if (rs.next()) {
-                return rs.getInt(1);
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            if (categoryFilter != null && !categoryFilter.isEmpty()) {
+                stmt.setInt(1, Integer.parseInt(categoryFilter));
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
         }
         return 0;
     }
 
-    public List<Map<String, Object>> getAllCategories() {
-        List<Map<String, Object>> categories = new ArrayList<>();
-        String query = "SELECT c.*, COUNT(bc.Book_ID) as book_count " +
-                "FROM Category c " +
-                "LEFT JOIN Book_Category bc ON c.Category_ID = bc.Category_ID " +
-                "GROUP BY c.Category_ID";
-        try (Connection conn = DBUtil.getConnection();
-                Statement stmt = conn.createStatement();
-                ResultSet rs = stmt.executeQuery(query)) {
-            while (rs.next()) {
-                Map<String, Object> category = new HashMap<>();
-                category.put("id", rs.getInt("Category_ID"));
-                category.put("name", rs.getString("category_name"));
-                category.put("description", rs.getString("description"));
-                category.put("bookCount", rs.getInt("book_count"));
-                categories.add(category);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return categories;
-    }
+    public boolean createBook(Book book, List<Integer> categoryIds) throws SQLException {
+        String sql = "INSERT INTO book (Book_name, price, writer_name, picture, status, stock, description) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        try (PreparedStatement stmt = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
+            stmt.setString(1, book.getBookName());
+            stmt.setDouble(2, book.getPrice());
+            stmt.setString(3, book.getWriterName());
+            stmt.setString(4, book.getPicture());
+            stmt.setString(5, book.getStatus());
+            stmt.setInt(6, book.getStock());
+            stmt.setString(7, book.getDescription());
 
-    public List<Book> getBooksByCategory(int categoryId) {
-        List<Book> books = new ArrayList<>();
-        String query = "SELECT b.*, c.name as categoryName FROM Book b " +
-                "JOIN Category c ON b.categoryId = c.id " +
-                "WHERE b.categoryId = ?";
-        try (Connection conn = DBUtil.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(query)) {
-            stmt.setInt(1, categoryId);
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    books.add(extractBookFromResultSet(rs));
+            int affectedRows = stmt.executeUpdate();
+            if (affectedRows > 0) {
+                try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
+                    if (generatedKeys.next()) {
+                        int bookId = generatedKeys.getInt(1);
+                        if (categoryIds != null && !categoryIds.isEmpty()) {
+                            updateBookCategories(bookId, categoryIds);
+                        }
+                        return true;
+                    }
                 }
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public void updateBookCategories(int bookId, List<Integer> categoryIds) throws SQLException {
+        // First delete existing categories
+        String deleteSql = "DELETE FROM book_category WHERE book_id = ?";
+        try (PreparedStatement stmt = conn.prepareStatement(deleteSql)) {
+            stmt.setInt(1, bookId);
+            stmt.executeUpdate();
+        }
+
+        // Then insert new categories
+        if (categoryIds != null && !categoryIds.isEmpty()) {
+            insertBookCategories(bookId, categoryIds);
+        }
+    }
+
+    private void insertBookCategories(long bookId, List<Integer> categoryIds) throws SQLException {
+        String sql = "INSERT INTO book_category (book_id, category_id) VALUES (?, ?)";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            for (Integer categoryId : categoryIds) {
+                stmt.setLong(1, bookId);
+                stmt.setInt(2, categoryId);
+                stmt.addBatch();
+            }
+            stmt.executeBatch();
+        }
+    }
+
+    public List<Map<String, Object>> getRecentActivities() throws SQLException {
+        List<Map<String, Object>> activities = new ArrayList<>();
+        String sql = "SELECT name, status, stock FROM books ORDER BY id DESC LIMIT 5";
+        try (PreparedStatement stmt = conn.prepareStatement(sql);
+                ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                Map<String, Object> activity = new HashMap<>();
+                activity.put("bookName", rs.getString("name"));
+                activity.put("status", rs.getString("status"));
+                activity.put("stock", rs.getInt("stock"));
+                activities.add(activity);
+            }
+        }
+        return activities;
+    }
+
+    public List<Book> getAllBooks(int page, int pageSize, String sortBy, String priceRange) throws SQLException {
+        List<Book> books = new ArrayList<>();
+        StringBuilder sql = new StringBuilder("SELECT * FROM book");
+
+        if (priceRange != null && !priceRange.isEmpty()) {
+            String[] range = priceRange.split("-");
+            if (range.length == 2) {
+                sql.append(" WHERE price BETWEEN ? AND ?");
+            }
+        }
+
+        if (sortBy != null && !sortBy.isEmpty()) {
+            sql.append(" ORDER BY ").append(sortBy);
+        }
+
+        sql.append(" LIMIT ? OFFSET ?");
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql.toString())) {
+            int paramIndex = 1;
+            if (priceRange != null && !priceRange.isEmpty()) {
+                String[] range = priceRange.split("-");
+                if (range.length == 2) {
+                    stmt.setDouble(paramIndex++, Double.parseDouble(range[0]));
+                    stmt.setDouble(paramIndex++, Double.parseDouble(range[1]));
+                }
+            }
+            stmt.setInt(paramIndex++, pageSize);
+            stmt.setInt(paramIndex, (page - 1) * pageSize);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Book book = mapResultSetToBook(rs);
+                    book.setCategories(getCategoriesForBook(book.getBookId()));
+                    books.add(book);
+                }
+            }
         }
         return books;
     }
 
-    public List<Category> getCategoriesForBook(int bookId) throws SQLException {
-        List<Category> categories = new ArrayList<>();
-        String sql = "SELECT c.* FROM category c JOIN book_category bc ON c.Category_ID = bc.Category_ID WHERE bc.Book_ID = ?";
+    public List<Book> getBooksByCategory(int categoryId, int page, int pageSize, String sortBy, String priceRange)
+            throws SQLException {
+        List<Book> books = new ArrayList<>();
+        StringBuilder sql = new StringBuilder(
+                "SELECT b.* FROM book b " +
+                        "JOIN book_category bc ON b.Book_ID = bc.Book_ID " +
+                        "WHERE bc.Category_ID = ?");
+
+        if (priceRange != null && !priceRange.isEmpty()) {
+            String[] range = priceRange.split("-");
+            if (range.length == 2) {
+                sql.append(" AND b.price BETWEEN ? AND ?");
+            }
+        }
+
+        if (sortBy != null && !sortBy.isEmpty()) {
+            sql.append(" ORDER BY b.").append(sortBy);
+        }
+
+        sql.append(" LIMIT ? OFFSET ?");
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql.toString())) {
+            int paramIndex = 1;
+            stmt.setInt(paramIndex++, categoryId);
+
+            if (priceRange != null && !priceRange.isEmpty()) {
+                String[] range = priceRange.split("-");
+                if (range.length == 2) {
+                    stmt.setDouble(paramIndex++, Double.parseDouble(range[0]));
+                    stmt.setDouble(paramIndex++, Double.parseDouble(range[1]));
+                }
+            }
+
+            stmt.setInt(paramIndex++, pageSize);
+            stmt.setInt(paramIndex, (page - 1) * pageSize);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Book book = mapResultSetToBook(rs);
+                    book.setCategories(getCategoriesForBook(book.getBookId()));
+                    books.add(book);
+                }
+            }
+        }
+        return books;
+    }
+
+    public List<Book> getFeaturedBooks(int limit) throws SQLException {
+        List<Book> books = new ArrayList<>();
+        String sql = "SELECT * FROM book WHERE status = 'bestseller' LIMIT ?";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, limit);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Book book = mapResultSetToBook(rs);
+                    book.setCategories(getCategoriesForBook(book.getBookId()));
+                    books.add(book);
+                }
+            }
+        }
+        return books;
+    }
+
+    public List<Book> getNewArrivals(int limit) throws SQLException {
+        List<Book> books = new ArrayList<>();
+        String sql = "SELECT * FROM book WHERE status = 'New' ORDER BY Book_ID DESC LIMIT ?";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, limit);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Book book = mapResultSetToBook(rs);
+                    book.setCategories(getCategoriesForBook(book.getBookId()));
+                    books.add(book);
+                }
+            }
+        }
+        return books;
+    }
+
+    public List<Book> getBestSellers(int page, int itemsPerPage, String sortBy, String categoryFilter)
+            throws SQLException {
+        List<Book> books = new ArrayList<>();
+        String sql = "SELECT b.* FROM book b " +
+                "LEFT JOIN book_category bc ON b.Book_ID = bc.Book_ID " +
+                "WHERE b.status = 'bestseller' ";
+
+        if (categoryFilter != null && !categoryFilter.isEmpty()) {
+            sql += "AND bc.Category_ID = ? ";
+        }
+
+        sql += getSortClause(sortBy);
+        sql += "LIMIT ? OFFSET ?";
 
         try (Connection conn = DBUtil.getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            int paramIndex = 1;
+            if (categoryFilter != null && !categoryFilter.isEmpty()) {
+                stmt.setInt(paramIndex++, Integer.parseInt(categoryFilter));
+            }
+
+            stmt.setInt(paramIndex++, itemsPerPage);
+            stmt.setInt(paramIndex, (page - 1) * itemsPerPage);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Book book = mapResultSetToBook(rs);
+                    book.setCategories(getCategoriesForBook(book.getBookId()));
+                    books.add(book);
+                }
+            }
+        }
+        return books;
+    }
+
+    public int countBestSellers(String categoryFilter) throws SQLException {
+        String sql = "SELECT COUNT(DISTINCT b.Book_ID) FROM book b " +
+                "LEFT JOIN book_category bc ON b.Book_ID = bc.Book_ID " +
+                "WHERE b.status = 'bestseller' ";
+
+        if (categoryFilter != null && !categoryFilter.isEmpty()) {
+            sql += "AND bc.Category_ID = ?";
+        }
+
+        try (Connection conn = DBUtil.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            if (categoryFilter != null && !categoryFilter.isEmpty()) {
+                stmt.setInt(1, Integer.parseInt(categoryFilter));
+            }
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        }
+        return 0;
+    }
+
+    public List<Book> getDeals(int page, int itemsPerPage, String sortBy, String categoryFilter) throws SQLException {
+        List<Book> books = new ArrayList<>();
+        String sql = "SELECT b.* FROM book b " +
+                "LEFT JOIN book_category bc ON b.Book_ID = bc.Book_ID " +
+                "WHERE b.status = 'deals' ";
+
+        if (categoryFilter != null && !categoryFilter.isEmpty()) {
+            sql += "AND bc.Category_ID = ? ";
+        }
+
+        sql += getSortClause(sortBy);
+        sql += "LIMIT ? OFFSET ?";
+
+        try (Connection conn = DBUtil.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            int paramIndex = 1;
+            if (categoryFilter != null && !categoryFilter.isEmpty()) {
+                stmt.setInt(paramIndex++, Integer.parseInt(categoryFilter));
+            }
+
+            stmt.setInt(paramIndex++, itemsPerPage);
+            stmt.setInt(paramIndex, (page - 1) * itemsPerPage);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Book book = mapResultSetToBook(rs);
+                    book.setCategories(getCategoriesForBook(book.getBookId()));
+                    books.add(book);
+                }
+            }
+        }
+        return books;
+    }
+
+    public int countDeals(String categoryFilter) throws SQLException {
+        String sql = "SELECT COUNT(DISTINCT b.Book_ID) FROM book b " +
+                "LEFT JOIN book_category bc ON b.Book_ID = bc.Book_ID " +
+                "WHERE b.status = 'deals' ";
+
+        if (categoryFilter != null && !categoryFilter.isEmpty()) {
+            sql += "AND bc.Category_ID = ?";
+        }
+
+        try (Connection conn = DBUtil.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            if (categoryFilter != null && !categoryFilter.isEmpty()) {
+                stmt.setInt(1, Integer.parseInt(categoryFilter));
+            }
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        }
+        return 0;
+    }
+
+    private String getSortClause(String sortBy) {
+        if (sortBy == null)
+            return "ORDER BY b.Book_ID DESC ";
+
+        switch (sortBy) {
+            case "price-low":
+                return "ORDER BY b.price ASC ";
+            case "price-high":
+                return "ORDER BY b.price DESC ";
+            case "name-asc":
+                return "ORDER BY b.Book_name ASC ";
+            case "name-desc":
+                return "ORDER BY b.Book_name DESC ";
+            case "date-desc":
+                return "ORDER BY b.Book_ID DESC ";
+            case "date-asc":
+                return "ORDER BY b.Book_ID ASC ";
+            case "discount":
+                return "ORDER BY b.price ASC ";
+            default:
+                return "ORDER BY b.Book_ID DESC ";
+        }
+    }
+
+    private List<Category> getCategoriesForBook(int bookId) throws SQLException {
+        List<Category> categories = new ArrayList<>();
+        String sql = "SELECT c.Category_ID, c.category_name, c.description FROM category c " +
+                "JOIN book_category bc ON c.Category_ID = bc.Category_ID WHERE bc.Book_ID = ?";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, bookId);
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     Category category = new Category();
-                    category.setCategoryId(rs.getInt("Category_ID"));
-                    category.setCategoryName(rs.getString("category_name"));
+                    category.setId(rs.getInt("Category_ID"));
+                    category.setName(rs.getString("category_name"));
                     category.setDescription(rs.getString("description"));
                     categories.add(category);
                 }
@@ -612,43 +669,44 @@ public class BookDAO {
         return categories;
     }
 
-    public void updateBookCategories(int bookId, List<Integer> categoryIds) throws SQLException {
-        Connection conn = null;
-        try {
-            conn = DBUtil.getConnection();
-            conn.setAutoCommit(false);
-
-            // First, delete all existing category associations for this book
-            String deleteSql = "DELETE FROM book_category WHERE Book_ID = ?";
-            try (PreparedStatement deleteStmt = conn.prepareStatement(deleteSql)) {
-                deleteStmt.setInt(1, bookId);
-                deleteStmt.executeUpdate();
-            }
-
-            // Then, insert the new category associations
-            if (categoryIds != null && !categoryIds.isEmpty()) {
-                String insertSql = "INSERT INTO book_category (Book_ID, Category_ID) VALUES (?, ?)";
-                try (PreparedStatement insertStmt = conn.prepareStatement(insertSql)) {
-                    for (int categoryId : categoryIds) {
-                        insertStmt.setInt(1, bookId);
-                        insertStmt.setInt(2, categoryId);
-                        insertStmt.addBatch();
-                    }
-                    insertStmt.executeBatch();
-                }
-            }
-
-            conn.commit();
-        } catch (SQLException e) {
-            if (conn != null) {
-                conn.rollback();
-            }
-            throw e;
-        } finally {
-            if (conn != null) {
-                conn.setAutoCommit(true);
-                conn.close();
+    public int getNewBooksThisMonth() throws SQLException {
+        String sql = "SELECT COUNT(*) FROM book";
+        try (Connection conn = DBUtil.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1);
             }
         }
+        return 0;
+    }
+
+    public List<Book> getTopSellingBooks(int limit) throws SQLException {
+        List<Book> books = new ArrayList<>();
+        String sql = "SELECT b.*, COUNT(oi.book_id) as sales_count, SUM(oi.quantity * oi.price) as revenue " +
+                "FROM book b " +
+                "LEFT JOIN order_item oi ON b.Book_ID = oi.Book_ID " +
+                "GROUP BY b.Book_ID " +
+                "ORDER BY sales_count DESC " +
+                "LIMIT ?";
+
+        try (Connection conn = DBUtil.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, limit);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                Book book = new Book();
+                book.setBookId(rs.getInt("Book_ID"));
+                book.setBookName(rs.getString("Book_name"));
+                book.setWriterName(rs.getString("writer_name"));
+                book.setPrice(rs.getDouble("price"));
+                book.setPicture(rs.getString("picture"));
+                book.setStatus(rs.getString("status"));
+                book.setStock(rs.getInt("stock"));
+                book.setDescription(rs.getString("description"));
+                books.add(book);
+            }
+        }
+        return books;
     }
 }

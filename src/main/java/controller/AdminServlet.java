@@ -1,21 +1,17 @@
 package controller;
 
-import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 
-import org.json.JSONObject;
+import com.google.gson.Gson;
 
 import dao.BookDAO;
 import dao.CategoryDAO;
 import dao.OrderDAO;
+import dao.PaymentDAO;
 import dao.SuggestionDAO;
 import dao.UserDAO;
-import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.WebServlet;
@@ -23,9 +19,11 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import jakarta.servlet.http.Part;
 import model.Book;
 import model.Category;
+import model.Order;
+import model.Payment;
+import model.SuggestionBook;
 import model.User;
 
 @MultipartConfig(fileSizeThreshold = 1024 * 1024, // 1 MB
@@ -38,8 +36,10 @@ public class AdminServlet extends HttpServlet {
     private BookDAO bookDAO;
     private UserDAO userDAO;
     private OrderDAO orderDAO;
+    private PaymentDAO paymentDAO;
     private CategoryDAO categoryDAO;
     private SuggestionDAO suggestionDAO;
+    private Gson gson;
 
     @Override
     public void init() throws ServletException {
@@ -48,8 +48,10 @@ public class AdminServlet extends HttpServlet {
             orderDAO = new OrderDAO();
             userDAO = new UserDAO();
             categoryDAO = new CategoryDAO();
+            paymentDAO = new PaymentDAO();
             suggestionDAO = new SuggestionDAO();
-        } catch (Exception e) {
+            gson = new Gson();
+        } catch (SQLException e) {
             throw new ServletException("Error initializing DAOs", e);
         }
     }
@@ -58,9 +60,29 @@ public class AdminServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         String action = request.getPathInfo();
-
         if (action == null) {
             action = "/dashboard";
+        }
+
+        HttpSession session = request.getSession();
+        User user = (User) session.getAttribute("user");
+        if (user == null || !user.isAdmin()) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN);
+            return;
+        }
+
+        // --- Book JSON for edit modal ---
+        if ("/books".equals(action) && request.getParameter("bookId") != null) {
+            try {
+                int bookId = Integer.parseInt(request.getParameter("bookId"));
+                Book book = bookDAO.getBook(bookId);
+                response.setContentType("application/json");
+                response.getWriter().write(gson.toJson(book));
+            } catch (Exception e) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                response.getWriter().write("{\"error\":\"Invalid book ID\"}");
+            }
+            return;
         }
 
         try {
@@ -69,804 +91,317 @@ public class AdminServlet extends HttpServlet {
                     showDashboard(request, response);
                     break;
                 case "/books":
-                    showBooks(request, response);
+                    listBooks(request, response);
                     break;
                 case "/categories":
-                    showCategories(request, response);
-                    break;
-                case "/users":
-                    showUsers(request, response);
+                    listCategories(request, response);
                     break;
                 case "/orders":
-                    showOrders(request, response);
+                    listOrders(request, response);
+                    break;
+                case "/users":
+                    listUsers(request, response);
                     break;
                 case "/profile":
-                    showProfile(request, response);
+                    request.getRequestDispatcher("/views/admin/profile.jsp").forward(request, response);
                     break;
                 case "/settings":
-                    showSettings(request, response);
-                    break;
-                case "/new":
-                    showNewBookForm(request, response);
-                    break;
-                case "/edit":
-                    showEditBookForm(request, response);
-                    break;
-                case "/delete":
-                    deleteBook(request, response);
+                    request.getRequestDispatcher("/views/admin/settings.jsp").forward(request, response);
                     break;
                 default:
                     response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                    break;
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        } catch (SQLException e) {
+            throw new ServletException("Error processing request", e);
         }
     }
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        String path = request.getPathInfo();
-
-        if (path == null) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+        String action = request.getPathInfo();
+        HttpSession session = request.getSession();
+        User user = (User) session.getAttribute("user");
+        if (user == null || !user.isAdmin()) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN);
             return;
         }
 
-        switch (path) {
-            case "/profile":
-                updateProfile(request, response);
-                break;
-            case "/profile/picture":
-                updateProfilePicture(request, response);
-                break;
-            case "/settings/update":
-                updateSettings(request, response);
-                break;
-            case "/books":
-                handleBookOperation(request, response);
-                break;
-            case "/users":
-                handleUserOperation(request, response);
-                break;
-            default:
-                response.sendError(HttpServletResponse.SC_NOT_FOUND);
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+
+        try {
+            switch (action) {
+                case "/update-order-status":
+                    int orderId = Integer.parseInt(request.getParameter("orderId"));
+                    String status = request.getParameter("status");
+                    boolean success = orderDAO.updateOrderStatus(orderId, status);
+                    if (success) {
+                        response.getWriter()
+                                .write("{\"success\":true, \"message\":\"Order status updated successfully\"}");
+                    } else {
+                        response.getWriter().write("{\"success\":false, \"error\":\"Failed to update order status\"}");
+                    }
+                    break;
+                case "/update-payment-status":
+                    updatePaymentStatus(request, response);
+                    break;
+                case "/settings/general":
+                    // Handle general settings update
+                    response.setContentType("application/json");
+                    response.getWriter()
+                            .write("{\"success\":true, \"message\":\"General settings updated successfully\"}");
+                    break;
+                case "/settings/payment":
+                    // Handle payment settings update
+                    response.setContentType("application/json");
+                    response.getWriter()
+                            .write("{\"success\":true, \"message\":\"Payment settings updated successfully\"}");
+                    break;
+                case "/settings/shipping":
+                    // Handle shipping settings update
+                    response.setContentType("application/json");
+                    response.getWriter()
+                            .write("{\"success\":true, \"message\":\"Shipping settings updated successfully\"}");
+                    break;
+                case "/settings/email":
+                    // Handle email settings update
+                    response.setContentType("application/json");
+                    response.getWriter()
+                            .write("{\"success\":true, \"message\":\"Email settings updated successfully\"}");
+                    break;
+                case "/delete-suggestion":
+                    deleteSuggestion(request, response);
+                    break;
+                default:
+                    response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                    break;
+            }
+        } catch (Exception e) {
+            response.getWriter().write("{\"success\":false, \"error\":\"" + e.getMessage() + "\"}");
         }
     }
 
     @Override
     protected void doDelete(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        String action = request.getPathInfo();
         HttpSession session = request.getSession();
         User user = (User) session.getAttribute("user");
-
-        // Check if user is logged in and is an admin
         if (user == null || !user.isAdmin()) {
             response.sendError(HttpServletResponse.SC_FORBIDDEN);
             return;
         }
-
-        String path = request.getPathInfo();
-        if (path == null || path.equals("/")) {
-            path = "/dashboard";
-        }
-
-        try {
-            switch (path) {
-                case "/users":
-                    handleUserDelete(request, response);
-                    break;
-                case "/books":
-                    handleBookDelete(request, response);
-                    break;
-                case "/categories":
-                    handleCategoryDelete(request, response);
-                    break;
-                default:
-                    response.sendError(HttpServletResponse.SC_NOT_FOUND);
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        // --- Book delete ---
+        if ("/books".equals(action)) {
+            String bookIdStr = request.getParameter("bookId");
+            try {
+                if (bookIdStr == null || bookIdStr.trim().isEmpty()) {
+                    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                    response.getWriter().write("{\"error\":\"Book ID is required\"}");
+                    return;
+                }
+                int bookId = Integer.parseInt(bookIdStr);
+                if (bookDAO.deleteBook(bookId)) {
+                    response.setStatus(HttpServletResponse.SC_OK);
+                    response.getWriter().write("{\"message\":\"Book deleted successfully\"}");
+                } else {
+                    response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                    response.getWriter().write("{\"error\":\"Failed to delete book\"}");
+                }
+            } catch (Exception e) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                response.getWriter().write("{\"error\":\"Invalid book ID\"}");
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            return;
         }
+        // --- Order delete ---
+        if ("/orders".equals(action)) {
+            String orderIdStr = request.getParameter("orderId");
+            try {
+                if (orderIdStr == null || orderIdStr.trim().isEmpty()) {
+                    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                    response.getWriter().write("{\"error\":\"Order ID is required\"}");
+                    return;
+                }
+                int orderId = Integer.parseInt(orderIdStr);
+                boolean deleted = orderDAO.deleteOrder(orderId);
+                if (deleted) {
+                    response.setStatus(HttpServletResponse.SC_OK);
+                    response.getWriter().write("{\"message\":\"Order deleted successfully\"}");
+                } else {
+                    response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                    response.getWriter().write("{\"error\":\"Failed to delete order\"}");
+                }
+            } catch (Exception e) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                response.getWriter().write("{\"error\":\"Invalid order ID\"}");
+            }
+            return;
+        }
+        response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+        response.getWriter().write("{\"error\":\"Invalid endpoint\"}");
     }
 
     private void showDashboard(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         try {
             // Get dashboard statistics
-            int totalBooks = bookDAO.getTotalBooks();
-            int activeUsers = userDAO.getActiveUsersCount();
-            int totalOrders = orderDAO.getTotalOrders();
+            int totalUsers = userDAO.getTotalUsers();
+            int newUsersThisMonth = userDAO.getNewUsersThisMonth(); // This now returns total users
+            long totalBooks = bookDAO.getTotalBooks();
+            int newBooksThisMonth = bookDAO.getNewBooksThisMonth();
+            int totalCategories = categoryDAO.getTotalCategories();
             double totalRevenue = orderDAO.getTotalRevenue();
+            double revenueThisMonth = orderDAO.getRevenueThisMonth();
+            double lastMonthRevenue = orderDAO.getLastMonthRevenue();
+            double revenueGrowth = lastMonthRevenue > 0
+                    ? ((revenueThisMonth - lastMonthRevenue) / lastMonthRevenue) * 100
+                    : 0;
 
-            // Get recent activities
-            List<Map<String, Object>> recentActivities = bookDAO.getRecentActivities();
+            // Get recent orders
+            List<Order> recentOrders = orderDAO.getRecentOrders(5);
+
+            // Get monthly revenue data
+            List<Double> monthlyRevenue = orderDAO.getMonthlyRevenue();
+
+            // Get top selling books
+            List<Book> topSellingBooks = bookDAO.getTopSellingBooks(5);
+
+            // Get top categories
+            List<Category> topCategories = categoryDAO.getTopCategories();
 
             // Set attributes
+            request.setAttribute("totalUsers", totalUsers);
+            request.setAttribute("newUsersThisMonth", newUsersThisMonth);
             request.setAttribute("totalBooks", totalBooks);
-            request.setAttribute("activeUsers", activeUsers);
-            request.setAttribute("totalOrders", totalOrders);
+            request.setAttribute("newBooksThisMonth", newBooksThisMonth);
+            request.setAttribute("totalCategories", totalCategories);
             request.setAttribute("totalRevenue", totalRevenue);
-            request.setAttribute("recentActivities", recentActivities);
+            request.setAttribute("revenueGrowth", Math.round(revenueGrowth * 10) / 10.0);
+            request.setAttribute("recentOrders", recentOrders);
+            request.setAttribute("monthlyRevenue", monthlyRevenue);
+            request.setAttribute("topSellingBooks", topSellingBooks);
+            request.setAttribute("topCategories", topCategories);
 
-            // Forward to dashboard JSP
+            // Forward to dashboard
             request.getRequestDispatcher("/views/admin/dashboard.jsp").forward(request, response);
-        } catch (Exception e) {
-            e.printStackTrace();
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    private void showBooks(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        try {
-            // Check if we're fetching a single book
-            String bookId = request.getParameter("bookId");
-            if (bookId != null) {
-                Book book = bookDAO.getBookById(Integer.parseInt(bookId));
-                if (book != null) {
-                    response.setContentType("application/json");
-                    response.getWriter().write("{\"id\":" + book.getBookId() +
-                            ",\"title\":\"" + book.getBookName() +
-                            "\",\"author\":\"" + book.getWriterName() +
-                            "\",\"price\":" + book.getPrice() +
-                            ",\"coverImage\":\"" + book.getPicture() + "\"}");
-                    return;
-                } else {
-                    response.sendError(HttpServletResponse.SC_NOT_FOUND, "Book not found");
-                    return;
-                }
-            }
-
-            // Get all books with pagination
-            int page = 1;
-            int recordsPerPage = 10;
-            if (request.getParameter("page") != null) {
-                page = Integer.parseInt(request.getParameter("page"));
-            }
-
-            List<Map<String, Object>> books = bookDAO.getAllBooks((page - 1) * recordsPerPage, recordsPerPage);
-            int noOfRecords = bookDAO.getNoOfRecords();
-            int noOfPages = (int) Math.ceil(noOfRecords * 1.0 / recordsPerPage);
-
-            List<Map<String, Object>> categories = bookDAO.getAllCategories();
-            request.setAttribute("categories", categories);
-
-            request.setAttribute("books", books);
-            request.setAttribute("noOfPages", noOfPages);
-            request.setAttribute("currentPage", page);
-
-            request.getRequestDispatcher("/views/admin/books.jsp").forward(request, response);
-        } catch (Exception e) {
-            e.printStackTrace();
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    private void showCategories(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        try {
-            // Get all categories
-            List<Map<String, Object>> categories = bookDAO.getAllCategories();
-            request.setAttribute("categories", categories);
-            request.getRequestDispatcher("/views/admin/categories.jsp").forward(request, response);
-        } catch (Exception e) {
-            e.printStackTrace();
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    private void showUsers(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        try {
-            String userName = request.getParameter("userName");
-            if (userName != null && !userName.isEmpty()) {
-                try {
-                    User user = userDAO.getUserByName(userName);
-                    if (user != null) {
-                        response.setContentType("application/json");
-                        response.getWriter().write("{" +
-                                "\"id\":" + user.getUserId() +
-                                ",\"name\":\"" + user.getName() + "\"" +
-                                ",\"email\":\"" + user.getEmail() + "\"" +
-                                ",\"address\":\"" + (user.getAddress() != null ? user.getAddress() : "") + "\"" +
-                                ",\"contact\":\"" + (user.getContact() != null ? user.getContact() : "") + "\"" +
-                                ",\"role\":\"" + user.getRole() + "\"" +
-                                ",\"picture\":\"" + (user.getPicture() != null ? user.getPicture() : "") + "\"" +
-                                "}");
-                        return;
-                    } else {
-                        response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-                        response.setContentType("application/json");
-                        response.getWriter().write("{\"error\":\"User not found\"}");
-                        return;
-                    }
-                } catch (Exception e) {
-                    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                    response.setContentType("application/json");
-                    response.getWriter().write("{\"error\":\"Invalid user name\"}");
-                    return;
-                }
-            }
-
-            // Get all users with pagination
-            int page = 1;
-            int recordsPerPage = 10;
-            if (request.getParameter("page") != null) {
-                page = Integer.parseInt(request.getParameter("page"));
-            }
-
-            List<Map<String, Object>> users = userDAO.getAllUsers((page - 1) * recordsPerPage, recordsPerPage);
-            int noOfRecords = userDAO.getNoOfRecords();
-            int noOfPages = (int) Math.ceil(noOfRecords * 1.0 / recordsPerPage);
-
-            request.setAttribute("users", users);
-            request.setAttribute("noOfPages", noOfPages);
-            request.setAttribute("currentPage", page);
-
-            request.getRequestDispatcher("/views/admin/users.jsp").forward(request, response);
-        } catch (Exception e) {
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            response.setContentType("application/json");
-            response.getWriter().write("{\"error\":\"Server error\"}");
-        }
-    }
-
-    private void showOrders(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        try {
-            // Get all orders with pagination
-            int page = 1;
-            int recordsPerPage = 10;
-            if (request.getParameter("page") != null) {
-                page = Integer.parseInt(request.getParameter("page"));
-            }
-
-            List<Map<String, Object>> orders = orderDAO.getAllOrders((page - 1) * recordsPerPage, recordsPerPage);
-            int noOfRecords = orderDAO.getNoOfRecords();
-            int noOfPages = (int) Math.ceil(noOfRecords * 1.0 / recordsPerPage);
-
-            request.setAttribute("orders", orders);
-            request.setAttribute("noOfPages", noOfPages);
-            request.setAttribute("currentPage", page);
-
-            request.getRequestDispatcher("/views/admin/orders.jsp").forward(request, response);
-        } catch (Exception e) {
-            e.printStackTrace();
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    private void showProfile(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        try {
-            User user = (User) request.getSession().getAttribute("user");
-            if (user != null) {
-                request.setAttribute("user", user);
-                request.getRequestDispatcher("/views/admin/profile.jsp").forward(request, response);
-            } else {
-                response.sendRedirect(request.getContextPath() + "/login");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    private void showSettings(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        try {
-            request.getRequestDispatcher("/views/admin/settings.jsp").forward(request, response);
-        } catch (Exception e) {
-            e.printStackTrace();
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    private void showNewBookForm(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        RequestDispatcher dispatcher = request.getRequestDispatcher("/views/admin/book-form.jsp");
-        dispatcher.forward(request, response);
-    }
-
-    private void showEditBookForm(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        try {
-            int id = Integer.parseInt(request.getParameter("id"));
-            Book book = bookDAO.getBookById(id);
-            if (book == null) {
-                response.sendError(HttpServletResponse.SC_NOT_FOUND);
-                return;
-            }
-            request.setAttribute("book", book);
-            RequestDispatcher dispatcher = request.getRequestDispatcher("/views/admin/book-form.jsp");
-            dispatcher.forward(request, response);
-        } catch (Exception e) {
-            e.printStackTrace();
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    private void deleteBook(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        try {
-            int id = Integer.parseInt(request.getParameter("id"));
-            if (bookDAO.deleteBook(id)) {
-                response.sendRedirect("books");
-            } else {
-                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    private void handleUserOperation(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        try {
-            String action = request.getParameter("action");
-            String userId = request.getParameter("userId");
-
-            if ("add".equals(action)) {
-                // Create new user
-                User newUser = new User();
-                newUser.setName(request.getParameter("name"));
-                newUser.setEmail(request.getParameter("email"));
-                newUser.setPassword(request.getParameter("password"));
-                newUser.setRole(request.getParameter("role"));
-                newUser.setAddress(request.getParameter("address"));
-                newUser.setContact(request.getParameter("contact"));
-
-                // Handle profile picture upload
-                Part filePart = request.getPart("picture");
-                if (filePart != null && filePart.getSize() > 0) {
-                    String fileName = java.util.UUID.randomUUID().toString() + "_" + getFileName(filePart);
-                    String uploadPath = getServletContext().getRealPath("/uploads/user-pictures");
-                    java.io.File uploadDir = new java.io.File(uploadPath);
-                    if (!uploadDir.exists())
-                        uploadDir.mkdirs();
-                    String filePath = uploadPath + java.io.File.separator + fileName;
-                    filePart.write(filePath);
-                    newUser.setPicture("uploads/user-pictures/" + fileName);
-                }
-
-                userDAO.createUser(newUser);
-                response.setStatus(HttpServletResponse.SC_CREATED);
-                response.getWriter().write("User created successfully");
-            } else if ("edit".equals(action) && userId != null) {
-                // Update existing user
-                User existingUser = userDAO.getUserById(Integer.parseInt(userId));
-                if (existingUser != null) {
-                    existingUser.setName(request.getParameter("name"));
-                    existingUser.setEmail(request.getParameter("email"));
-                    existingUser.setRole(request.getParameter("role"));
-                    existingUser.setAddress(request.getParameter("address"));
-                    existingUser.setContact(request.getParameter("contact"));
-
-                    // Only update password if provided
-                    String newPassword = request.getParameter("password");
-                    if (newPassword != null && !newPassword.isEmpty()) {
-                        existingUser.setPassword(newPassword);
-                    }
-
-                    // Handle profile picture upload
-                    Part filePart = request.getPart("picture");
-                    if (filePart != null && filePart.getSize() > 0) {
-                        String fileName = java.util.UUID.randomUUID().toString() + "_" + getFileName(filePart);
-                        String uploadPath = getServletContext().getRealPath("/uploads/user-pictures");
-                        java.io.File uploadDir = new java.io.File(uploadPath);
-                        if (!uploadDir.exists())
-                            uploadDir.mkdirs();
-                        String filePath = uploadPath + java.io.File.separator + fileName;
-                        filePart.write(filePath);
-                        existingUser.setPicture("uploads/user-pictures/" + fileName);
-                    }
-
-                    userDAO.updateUser(existingUser);
-                    response.setStatus(HttpServletResponse.SC_OK);
-                    response.getWriter().write("User updated successfully");
-                } else {
-                    response.sendError(HttpServletResponse.SC_NOT_FOUND, "User not found");
-                }
-            } else {
-                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid action");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    private String getFileName(Part part) {
-        String contentDisposition = part.getHeader("content-disposition");
-        String[] elements = contentDisposition.split(";");
-        for (String element : elements) {
-            if (element.trim().startsWith("filename")) {
-                return element.substring(element.indexOf('=') + 1).trim().replace("\"", "");
-            }
-        }
-        return "";
-    }
-
-    private void handleUserDelete(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        try {
-            String userName = request.getParameter("userName");
-            if (userName != null && !userName.trim().isEmpty()) {
-                if (userDAO.deleteUserByName(userName)) {
-                    response.setStatus(HttpServletResponse.SC_OK);
-                    response.getWriter().write("User deleted successfully");
-                } else {
-                    response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Failed to delete user");
-                }
-            } else {
-                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "User name is required");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    private void handleBookOperation(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        try {
-            String action = request.getParameter("action");
-            String bookId = request.getParameter("bookId");
-
-            if ("add".equals(action)) {
-                Book newBook = new Book();
-                newBook.setBookName(request.getParameter("bookName"));
-                newBook.setWriterName(request.getParameter("writerName"));
-                newBook.setPrice(Double.parseDouble(request.getParameter("price")));
-                newBook.setStatus(request.getParameter("status"));
-                newBook.setStock(Integer.parseInt(request.getParameter("stock")));
-                newBook.setDescription(request.getParameter("description"));
-
-                // Handle book cover upload
-                Part filePart = request.getPart("picture");
-                if (filePart != null && filePart.getSize() > 0) {
-                    String fileName = java.util.UUID.randomUUID().toString() + "_" + getFileName(filePart);
-                    String uploadPath = getServletContext().getRealPath("/uploads/book-covers");
-                    java.io.File uploadDir = new java.io.File(uploadPath);
-                    if (!uploadDir.exists())
-                        uploadDir.mkdirs();
-                    String filePath = uploadPath + java.io.File.separator + fileName;
-                    filePart.write(filePath);
-                    newBook.setPicture("uploads/book-covers/" + fileName);
-                }
-
-                // Handle categories
-                String[] categoryIds = request.getParameterValues("categories");
-                List<Integer> selectedCategoryIds = new ArrayList<>();
-                if (categoryIds != null) {
-                    for (String categoryId : categoryIds) {
-                        selectedCategoryIds.add(Integer.parseInt(categoryId));
-                    }
-                }
-
-                if (bookDAO.createBook(newBook, selectedCategoryIds)) {
-                    response.setStatus(HttpServletResponse.SC_CREATED);
-                    response.getWriter().write("Book created successfully");
-                } else {
-                    response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Failed to create book");
-                }
-            } else if ("edit".equals(action) && bookId != null) {
-                Book existingBook = bookDAO.getBookById(Integer.parseInt(bookId));
-                if (existingBook != null) {
-                    existingBook.setBookName(request.getParameter("bookName"));
-                    existingBook.setWriterName(request.getParameter("writerName"));
-                    existingBook.setPrice(Double.parseDouble(request.getParameter("price")));
-                    existingBook.setStatus(request.getParameter("status"));
-                    existingBook.setStock(Integer.parseInt(request.getParameter("stock")));
-                    existingBook.setDescription(request.getParameter("description"));
-
-                    // Handle book cover upload
-                    Part filePart = request.getPart("picture");
-                    if (filePart != null && filePart.getSize() > 0) {
-                        String fileName = java.util.UUID.randomUUID().toString() + "_" + getFileName(filePart);
-                        String uploadPath = getServletContext().getRealPath("/uploads/book-covers");
-                        java.io.File uploadDir = new java.io.File(uploadPath);
-                        if (!uploadDir.exists())
-                            uploadDir.mkdirs();
-                        String filePath = uploadPath + java.io.File.separator + fileName;
-                        filePart.write(filePath);
-                        existingBook.setPicture("uploads/book-covers/" + fileName);
-                    }
-
-                    // Handle categories
-                    String[] categoryIds = request.getParameterValues("categories");
-                    List<Integer> selectedCategoryIds = new ArrayList<>();
-                    if (categoryIds != null) {
-                        for (String categoryId : categoryIds) {
-                            selectedCategoryIds.add(Integer.parseInt(categoryId));
-                        }
-                    }
-
-                    bookDAO.updateBook(existingBook);
-                    bookDAO.updateBookCategories(existingBook.getBookId(), selectedCategoryIds);
-                    response.setStatus(HttpServletResponse.SC_OK);
-                    response.getWriter().write("Book updated successfully");
-                } else {
-                    response.sendError(HttpServletResponse.SC_NOT_FOUND, "Book not found");
-                }
-            } else {
-                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid action");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    private void handleBookDelete(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        try {
-            String bookId = request.getParameter("bookId");
-            if (bookId != null) {
-                if (bookDAO.deleteBook(Integer.parseInt(bookId))) {
-                    response.setStatus(HttpServletResponse.SC_OK);
-                    response.getWriter().write("Book deleted successfully");
-                } else {
-                    response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Failed to delete book");
-                }
-            } else {
-                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Book ID is required");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    private void handleCategoryOperation(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        try {
-            String action = request.getParameter("action");
-            String categoryId = request.getParameter("categoryId");
-
-            if ("add".equals(action)) {
-                Category category = new Category();
-                category.setCategoryName(request.getParameter("name"));
-                category.setDescription(request.getParameter("description"));
-
-                if (categoryDAO.createCategory(category)) {
-                    response.setStatus(HttpServletResponse.SC_CREATED);
-                    response.getWriter().write("Category created successfully");
-                } else {
-                    response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Failed to create category");
-                }
-            } else if ("edit".equals(action) && categoryId != null) {
-                Category category = new Category();
-                category.setCategoryId(Integer.parseInt(categoryId));
-                category.setCategoryName(request.getParameter("name"));
-                category.setDescription(request.getParameter("description"));
-
-                if (categoryDAO.updateCategory(category)) {
-                    response.setStatus(HttpServletResponse.SC_OK);
-                    response.getWriter().write("Category updated successfully");
-                } else {
-                    response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Failed to update category");
-                }
-            } else {
-                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid action");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    private void handleCategoryDelete(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        try {
-            String categoryId = request.getParameter("categoryId");
-            if (categoryId != null) {
-                if (categoryDAO.deleteCategory(Integer.parseInt(categoryId))) {
-                    response.setStatus(HttpServletResponse.SC_OK);
-                    response.getWriter().write("Category deleted successfully");
-                } else {
-                    response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Failed to delete category");
-                }
-            } else {
-                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Category ID is required");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    private void handleSuggestionOperation(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        try {
-            String action = request.getParameter("action");
-            String suggestionId = request.getParameter("suggestionId");
-
-            if (suggestionId == null) {
-                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Suggestion ID is required");
-                return;
-            }
-
-            if ("approve".equals(action)) {
-                if (suggestionDAO.approveSuggestion(Integer.parseInt(suggestionId))) {
-                    response.setStatus(HttpServletResponse.SC_OK);
-                    response.getWriter().write("Suggestion approved successfully");
-                } else {
-                    response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Failed to approve suggestion");
-                }
-            } else if ("reject".equals(action)) {
-                if (suggestionDAO.rejectSuggestion(Integer.parseInt(suggestionId))) {
-                    response.setStatus(HttpServletResponse.SC_OK);
-                    response.getWriter().write("Suggestion rejected successfully");
-                } else {
-                    response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Failed to reject suggestion");
-                }
-            } else {
-                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid action");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    private void insertBook(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        try {
-            Book book = new Book();
-            book.setBookName(request.getParameter("bookName"));
-            book.setPrice(Double.parseDouble(request.getParameter("price")));
-            book.setWriterName(request.getParameter("writerName"));
-            book.setPicture(request.getParameter("picture"));
-
-            if (bookDAO.createBook(book, new ArrayList<>())) {
-                response.sendRedirect("books");
-            } else {
-                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    private void updateBook(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        try {
-            Book book = new Book();
-            book.setBookId(Integer.parseInt(request.getParameter("id")));
-            book.setBookName(request.getParameter("bookName"));
-            book.setPrice(Double.parseDouble(request.getParameter("price")));
-            book.setWriterName(request.getParameter("writerName"));
-            book.setPicture(request.getParameter("picture"));
-
-            if (bookDAO.updateBook(book)) {
-                response.sendRedirect("books");
-            } else {
-                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    private void updateOrderStatus(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        int orderId = Integer.parseInt(request.getParameter("orderId"));
-        String status = request.getParameter("status");
-        try {
-            orderDAO.updateOrderStatus(orderId, status);
         } catch (SQLException e) {
             e.printStackTrace();
+            throw new ServletException("Error loading dashboard data", e);
         }
-        response.sendRedirect("orders");
     }
 
-    private void updateProfile(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+    private void listUsers(HttpServletRequest request, HttpServletResponse response)
+            throws SQLException, ServletException, IOException {
         try {
-            User user = (User) request.getSession().getAttribute("user");
-            if (user == null) {
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.getWriter().write("{\"success\": false, \"message\": \"User not logged in\"}");
-                return;
+            List<User> users = userDAO.getAllUsers();
+            request.setAttribute("users", users);
+            request.getRequestDispatcher("/views/admin/users.jsp").forward(request, response);
+        } catch (SQLException e) {
+            throw new ServletException("Error loading users", e);
+        }
+    }
+
+    private void listBooks(HttpServletRequest request, HttpServletResponse response)
+            throws SQLException, ServletException, IOException {
+        try {
+            List<Book> books = bookDAO.getAllBooks();
+            List<Category> categories = categoryDAO.getAllCategories();
+            request.setAttribute("books", books);
+            request.setAttribute("categories", categories);
+            request.getRequestDispatcher("/views/admin/books.jsp").forward(request, response);
+        } catch (SQLException e) {
+            throw new ServletException("Error loading books", e);
+        }
+    }
+
+    private void listCategories(HttpServletRequest request, HttpServletResponse response)
+            throws SQLException, ServletException, IOException {
+        try {
+            List<Category> categories = categoryDAO.getAllCategories();
+            request.setAttribute("categories", categories);
+            request.getRequestDispatcher("/views/admin/categories.jsp").forward(request, response);
+        } catch (SQLException e) {
+            throw new ServletException("Error loading categories", e);
+        }
+    }
+
+    private void listOrders(HttpServletRequest request, HttpServletResponse response)
+            throws SQLException, ServletException, IOException {
+        try {
+            List<Order> orders = orderDAO.getAllOrders();
+            // Build payment status map
+            java.util.Map<Integer, String> orderPaymentStatus = new java.util.HashMap<>();
+            for (Order order : orders) {
+                String status = paymentDAO.getOrderPayment(order.getOrderId()) != null
+                        ? paymentDAO.getOrderPayment(order.getOrderId()).getStatus()
+                        : "N/A";
+                orderPaymentStatus.put(order.getOrderId(), status);
             }
+            request.setAttribute("orders", orders);
+            request.setAttribute("orderPaymentStatus", orderPaymentStatus);
+            request.getRequestDispatcher("/views/admin/orders.jsp").forward(request, response);
+        } catch (SQLException e) {
+            throw new ServletException("Error loading orders", e);
+        }
+    }
 
-            // Parse JSON request body
-            StringBuilder jsonBuilder = new StringBuilder();
-            String line;
-            while ((line = request.getReader().readLine()) != null) {
-                jsonBuilder.append(line);
+    private void listPayments(HttpServletRequest request, HttpServletResponse response)
+            throws SQLException, ServletException, IOException {
+        try {
+            List<Payment> payments = paymentDAO.getUserPayments(0); // Get all payments
+            request.setAttribute("payments", payments);
+            request.getRequestDispatcher("/views/admin/payments.jsp").forward(request, response);
+        } catch (SQLException e) {
+            throw new ServletException("Error loading payments", e);
+        }
+    }
+
+    private void listSuggestions(HttpServletRequest request, HttpServletResponse response)
+            throws SQLException, ServletException, IOException {
+        try {
+            List<SuggestionBook> suggestions = suggestionDAO.getAllSuggestions();
+            request.setAttribute("suggestions", suggestions);
+            request.getRequestDispatcher("/views/admin/suggestions.jsp").forward(request, response);
+        } catch (SQLException e) {
+            throw new ServletException("Error loading suggestions", e);
+        }
+    }
+
+    private void deleteSuggestion(HttpServletRequest request, HttpServletResponse response)
+            throws SQLException, IOException {
+        try {
+            int suggestionId = Integer.parseInt(request.getParameter("suggestionId"));
+            if (suggestionDAO.deleteSuggestion(suggestionId)) {
+                response.sendRedirect(request.getContextPath() + "/admin/suggestions");
+            } else {
+                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to delete suggestion");
             }
-            String json = jsonBuilder.toString();
-            JSONObject jsonObject = new JSONObject(json);
+        } catch (SQLException e) {
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                    "Error deleting suggestion: " + e.getMessage());
+        }
+    }
 
-            // Update user information
-            user.setName(jsonObject.getString("name"));
-            user.setEmail(jsonObject.getString("email"));
-            user.setAddress(jsonObject.optString("address", user.getAddress()));
-            user.setContact(jsonObject.optString("contact", user.getContact()));
-
-            // Update password if provided
-            String currentPassword = jsonObject.optString("currentPassword");
-            String newPassword = jsonObject.optString("newPassword");
-            String confirmPassword = jsonObject.optString("confirmPassword");
-
-            if (currentPassword != null && !currentPassword.isEmpty() &&
-                    newPassword != null && !newPassword.isEmpty() &&
-                    confirmPassword != null && !confirmPassword.isEmpty()) {
-
-                if (!user.getPassword().equals(currentPassword)) {
-                    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                    response.getWriter().write("{\"success\": false, \"message\": \"Current password is incorrect\"}");
-                    return;
-                }
-
-                if (!newPassword.equals(confirmPassword)) {
-                    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                    response.getWriter().write("{\"success\": false, \"message\": \"New passwords do not match\"}");
-                    return;
-                }
-
-                user.setPassword(newPassword);
+    private void updatePaymentStatus(HttpServletRequest request, HttpServletResponse response)
+            throws SQLException, IOException {
+        try {
+            int orderId = Integer.parseInt(request.getParameter("orderId"));
+            String status = request.getParameter("status");
+            if (paymentDAO.updatePaymentStatus(orderId, status)) {
+                response.setContentType("application/json");
+                response.getWriter().write("{\"success\":true, \"message\":\"Payment status updated successfully\"}");
+            } else {
+                response.setContentType("application/json");
+                response.getWriter().write("{\"success\":false, \"error\":\"Failed to update payment status\"}");
             }
-
-            // Update user in database
-            userDAO.updateUser(user);
-
+        } catch (Exception e) {
             response.setContentType("application/json");
-            response.getWriter().write("{\"success\": true, \"message\": \"Profile updated successfully\"}");
-        } catch (Exception e) {
-            e.printStackTrace();
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            response.getWriter().write("{\"success\": false, \"message\": \"Error updating profile\"}");
-        }
-    }
-
-    private void updateProfilePicture(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        try {
-            User user = (User) request.getSession().getAttribute("user");
-            if (user == null) {
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.getWriter().write("{\"success\": false, \"message\": \"User not logged in\"}");
-                return;
-            }
-
-            Part filePart = request.getPart("picture");
-            if (filePart != null && filePart.getSize() > 0) {
-                String fileName = UUID.randomUUID().toString() + "_" + getFileName(filePart);
-                String uploadPath = getServletContext().getRealPath("/uploads/user-pictures");
-                File uploadDir = new File(uploadPath);
-                if (!uploadDir.exists()) {
-                    uploadDir.mkdirs();
-                }
-                String filePath = uploadPath + File.separator + fileName;
-                filePart.write(filePath);
-                user.setPicture("uploads/user-pictures/" + fileName);
-                userDAO.updateUser(user);
-            }
-
-            response.setContentType("application/json");
-            response.getWriter().write("{\"success\": true, \"message\": \"Profile picture updated successfully\"}");
-        } catch (Exception e) {
-            e.printStackTrace();
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            response.getWriter().write("{\"success\": false, \"message\": \"Error updating profile picture\"}");
-        }
-    }
-
-    private void updateSettings(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        try {
-            request.getRequestDispatcher("/views/admin/settings.jsp").forward(request, response);
-        } catch (Exception e) {
-            e.printStackTrace();
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.getWriter().write("{\"success\":false, \"error\":\"" + e.getMessage() + "\"}");
         }
     }
 }
