@@ -591,17 +591,17 @@
             width: 40px;
             height: 40px;
             font-size: 16px;
+            }
         }
-    }
-</style>
+    </style>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Team Slider Elements
-    const teamSlider = document.querySelector('.team-slider-container');
-    const teamPrevBtn = document.querySelector('.team-prev-btn');
-    const teamNextBtn = document.querySelector('.team-next-btn');
-    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Team Slider Elements
+            const teamSlider = document.querySelector('.team-slider-container');
+            const teamPrevBtn = document.querySelector('.team-prev-btn');
+            const teamNextBtn = document.querySelector('.team-next-btn');
+            
     if (teamSlider && teamPrevBtn && teamNextBtn) {
         const cardWidth = 270; // Width of each team member card
         const gap = 30; // Gap between cards
@@ -628,7 +628,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const maxScroll = teamSlider.scrollWidth - teamSlider.clientWidth;
             teamPrevBtn.disabled = teamSlider.scrollLeft <= 0;
             teamNextBtn.disabled = teamSlider.scrollLeft >= maxScroll;
-        }
+                        }
         
         // Update button states on scroll
         teamSlider.addEventListener('scroll', updateButtonStates);
@@ -658,12 +658,12 @@ document.addEventListener('DOMContentLoaded', function() {
         
         function pauseAutoAdvance() {
             clearInterval(autoAdvanceInterval);
-        }
-        
+                    }
+
         // Start auto advance
         startAutoAdvance();
-        
-        // Pause on hover
+
+                // Pause on hover
         teamSlider.addEventListener('mouseenter', pauseAutoAdvance);
         teamSlider.addEventListener('mouseleave', startAutoAdvance);
         
@@ -686,5 +686,5 @@ document.addEventListener('DOMContentLoaded', function() {
             img.src = '${pageContext.request.contextPath}/images/default-profile.png';
         };
     });
-});
-</script>
+        });
+    </script>

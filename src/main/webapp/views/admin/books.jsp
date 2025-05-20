@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -28,16 +29,16 @@
                         <div class="stat-info">
                             <h3>Total Books</h3>
                             <p class="stat-value">${totalBooks}</p>
-                            <p class="stat-change">+${newBooksThisMonth} this month</p>
                         </div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-icon customers">
-                            <i class="fas fa-tags"></i>
+                        <div class="stat-icon warning">
+                            <i class="fas fa-exclamation-triangle"></i>
                         </div>
                         <div class="stat-info">
-                            <h3>Categories</h3>
-                            <p class="stat-value">${totalCategories}</p>
+                            <h3>Low Stock Books</h3>
+                            <p class="stat-value">${lowStockBooks}</p>
+                            <p class="stat-change">Books with stock < 10</p>
                         </div>
                     </div>
                     <div class="stat-card">
@@ -45,9 +46,8 @@
                             <i class="fas fa-dollar-sign"></i>
                         </div>
                         <div class="stat-info">
-                            <h3>Revenue</h3>
-                            <p class="stat-value">$${totalRevenue}</p>
-                            <p class="stat-change">+${revenueGrowth}% this month</p>
+                            <h3>Total Revenue</h3>
+                            <p class="stat-value"><fmt:formatNumber value="${totalRevenue}" type="currency" currencySymbol="$"/></p>
                         </div>
                     </div>
                 </div>

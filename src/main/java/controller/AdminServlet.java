@@ -115,6 +115,19 @@ public class AdminServlet extends HttpServlet {
                             session.setAttribute("user", updatedUser);
                         }
                     }
+
+                    // Fetch stats for profile page
+                    long totalBooks = bookDAO.getTotalBooks();
+                    int totalUsers = userDAO.getTotalUsers();
+                    double totalRevenue = orderDAO.getTotalRevenue();
+                    int totalOrders = orderDAO.getTotalOrders();
+
+                    // Set attributes
+                    request.setAttribute("totalBooks", totalBooks);
+                    request.setAttribute("totalUsers", totalUsers);
+                    request.setAttribute("totalRevenue", totalRevenue);
+                    request.setAttribute("totalOrders", totalOrders);
+
                     request.getRequestDispatcher("/views/admin/profile.jsp").forward(request, response);
                     break;
                 default:
@@ -305,10 +318,22 @@ public class AdminServlet extends HttpServlet {
     private void listBooks(HttpServletRequest request, HttpServletResponse response)
             throws SQLException, ServletException, IOException {
         try {
+            // Get books and categories
             List<Book> books = bookDAO.getAllBooks();
             List<Category> categories = categoryDAO.getAllCategories();
+
+            // Get stats for cards
+            long totalBooks = bookDAO.getTotalBooks();
+            int lowStockBooks = bookDAO.getLowStockBooksCount(10); // Threshold set to 10
+            double totalRevenue = orderDAO.getTotalRevenue();
+
+            // Set attributes
             request.setAttribute("books", books);
             request.setAttribute("categories", categories);
+            request.setAttribute("totalBooks", totalBooks);
+            request.setAttribute("lowStockBooks", lowStockBooks);
+            request.setAttribute("totalRevenue", totalRevenue);
+
             request.getRequestDispatcher("/views/admin/books.jsp").forward(request, response);
         } catch (SQLException e) {
             throw new ServletException("Error loading books", e);
@@ -329,8 +354,8 @@ public class AdminServlet extends HttpServlet {
     private void listOrders(HttpServletRequest request, HttpServletResponse response)
             throws SQLException, ServletException, IOException {
         try {
+            // Get orders and payment status
             List<Order> orders = orderDAO.getAllOrders();
-            // Build payment status map
             java.util.Map<Integer, String> orderPaymentStatus = new java.util.HashMap<>();
             for (Order order : orders) {
                 String status = paymentDAO.getOrderPayment(order.getOrderId()) != null
@@ -338,8 +363,21 @@ public class AdminServlet extends HttpServlet {
                         : "N/A";
                 orderPaymentStatus.put(order.getOrderId(), status);
             }
+
+            // Get stats for cards
+            int totalOrders = orderDAO.getTotalOrders();
+            int pendingOrders = orderDAO.getPendingOrdersCount();
+            double averageOrderValue = orderDAO.getAverageOrderValue();
+            int booksSoldToday = orderDAO.getBooksSoldToday();
+
+            // Set attributes
             request.setAttribute("orders", orders);
             request.setAttribute("orderPaymentStatus", orderPaymentStatus);
+            request.setAttribute("totalOrders", totalOrders);
+            request.setAttribute("pendingOrders", pendingOrders);
+            request.setAttribute("averageOrderValue", averageOrderValue);
+            request.setAttribute("booksSoldToday", booksSoldToday);
+
             request.getRequestDispatcher("/views/admin/orders.jsp").forward(request, response);
         } catch (SQLException e) {
             throw new ServletException("Error loading orders", e);

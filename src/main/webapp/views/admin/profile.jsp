@@ -1,6 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -390,26 +391,43 @@
                     </div>
                 </div>
 
-                <div class="profile-stats">
+                <!-- Stats Cards -->
+                <div class="stats-grid">
                     <div class="stat-card">
-                        <i class="fas fa-book"></i>
-                        <h3>${totalBooks}</h3>
-                        <p>Total Books</p>
+                        <div class="stat-icon sales">
+                            <i class="fas fa-book"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>Total Books</h3>
+                            <p class="stat-value">${totalBooks}</p>
+                        </div>
                     </div>
                     <div class="stat-card">
-                        <i class="fas fa-users"></i>
-                        <h3>${totalUsers}</h3>
-                        <p>Total Users</p>
+                        <div class="stat-icon warning">
+                             <i class="fas fa-users"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>Total Users</h3>
+                            <p class="stat-value">${totalUsers}</p>
+                        </div>
                     </div>
                     <div class="stat-card">
-                        <i class="fas fa-shopping-cart"></i>
-                        <h3>${totalOrders}</h3>
-                        <p>Total Orders</p>
+                        <div class="stat-icon orders">
+                            <i class="fas fa-shopping-cart"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>Total Orders</h3>
+                            <p class="stat-value">${totalOrders}</p>
+                        </div>
                     </div>
                     <div class="stat-card">
-                        <i class="fas fa-dollar-sign"></i>
-                        <h3>$${totalRevenue}</h3>
-                        <p>Total Revenue</p>
+                        <div class="stat-icon revenue">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+                        <div class="stat-info">
+                             <p class="stat-value"><fmt:formatNumber value="${totalRevenue}" type="currency" currencySymbol="$"/></p>
+                             <h3>Total Revenue</h3>
+                        </div>
                     </div>
                 </div>
 
@@ -444,59 +462,6 @@
                                 <i class="fas fa-save"></i> Update Information
                             </button>
                         </form>
-                    </section>
-
-                    <!-- Change Password -->
-                    <section class="profile-section">
-                        <h3><i class="fas fa-lock"></i> Change Password</h3>
-                        <form id="passwordForm" class="profile-form" action="${pageContext.request.contextPath}/users/change-password" method="post">
-                            <div class="form-group">
-                                <label for="currentPassword">Current Password</label>
-                                <input type="password" id="currentPassword" name="currentPassword" class="form-control" required>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="newPassword">New Password</label>
-                                <input type="password" id="newPassword" name="newPassword" class="form-control" required>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="confirmPassword">Confirm New Password</label>
-                                <input type="password" id="confirmPassword" name="confirmPassword" class="form-control" required>
-                            </div>
-                            
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-key"></i> Change Password
-                            </button>
-                        </form>
-                    </section>
-
-                    <!-- Recent Activity -->
-                    <section class="profile-section">
-                        <h3><i class="fas fa-history"></i> Recent Activity</h3>
-                        <div class="activity-timeline">
-                            <div class="timeline-item">
-                                <div class="timeline-content">
-                                    <h4>Profile Updated</h4>
-                                    <p>Your profile information was updated</p>
-                                    <span class="timeline-date">Today, 10:30 AM</span>
-                                </div>
-                            </div>
-                            <div class="timeline-item">
-                                <div class="timeline-content">
-                                    <h4>Password Changed</h4>
-                                    <p>Your password was successfully changed</p>
-                                    <span class="timeline-date">Yesterday, 3:45 PM</span>
-                                </div>
-                            </div>
-                            <div class="timeline-item">
-                                <div class="timeline-content">
-                                    <h4>New Login</h4>
-                                    <p>You logged in from a new device</p>
-                                    <span class="timeline-date">May 18, 2024</span>
-                                </div>
-                            </div>
-                        </div>
                     </section>
                 </div>
             </div>
@@ -543,40 +508,22 @@
                 if (response.ok) {
                     showNotification('Profile updated successfully', 'success');
                 } else {
-                    throw new Error('Failed to update profile');
+                    // Attempt to read error message from response body
+                    response.text().then(text => {
+                         try {
+                             const errorData = JSON.parse(text);
+                             showNotification(errorData.error || 'Failed to update profile', 'error');
+                         } catch (parseError) {
+                             showNotification('Failed to update profile: ' + text, 'error');
+                         }
+                    }).catch(() => {
+                         showNotification('Failed to update profile', 'error');
+                    });
+                   
                 }
             })
             .catch(error => {
-                showNotification(error.message, 'error');
-            });
-        });
-
-        document.getElementById('passwordForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const newPassword = document.getElementById('newPassword').value;
-            const confirmPassword = document.getElementById('confirmPassword').value;
-
-            if (newPassword !== confirmPassword) {
-                showNotification('Passwords do not match', 'error');
-                return;
-            }
-
-            const formData = new FormData(this);
-            
-            fetch('${pageContext.request.contextPath}/users/change-password', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => {
-                if (response.ok) {
-                    showNotification('Password changed successfully', 'success');
-                    this.reset();
-                } else {
-                    throw new Error('Failed to change password');
-                }
-            })
-            .catch(error => {
-                showNotification(error.message, 'error');
+                showNotification('Network error: ' + error.message, 'error');
             });
         });
 

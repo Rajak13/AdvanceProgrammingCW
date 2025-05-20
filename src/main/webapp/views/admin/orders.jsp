@@ -77,7 +77,15 @@
                         <div class="stat-info">
                             <h3>Total Orders</h3>
                             <p class="stat-value">${totalOrders}</p>
-                            <p class="stat-change">+${newOrdersThisMonth} this month</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon warning">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>Pending Orders</h3>
+                            <p class="stat-value">${pendingOrders}</p>
                         </div>
                     </div>
                     <div class="stat-card">
@@ -85,19 +93,17 @@
                             <i class="fas fa-dollar-sign"></i>
                         </div>
                         <div class="stat-info">
-                            <h3>Total Revenue</h3>
-                            <p class="stat-value">$${totalRevenue}</p>
-                            <p class="stat-change">+${revenueGrowth}% this month</p>
+                            <h3>Average Order Value</h3>
+                            <p class="stat-value"><fmt:formatNumber value="${averageOrderValue}" type="currency" currencySymbol="$"/></p>
                         </div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-icon customers">
-                            <i class="fas fa-users"></i>
+                        <div class="stat-icon success">
+                            <i class="fas fa-book"></i>
                         </div>
                         <div class="stat-info">
-                            <h3>Total Customers</h3>
-                            <p class="stat-value">${totalCustomers}</p>
-                            <p class="stat-change">+${newCustomersThisMonth} this month</p>
+                            <h3>Books Sold Today</h3>
+                            <p class="stat-value">${booksSoldToday}</p>
                         </div>
                     </div>
                 </div>
