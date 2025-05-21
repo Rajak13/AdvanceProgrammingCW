@@ -13,7 +13,7 @@ import jakarta.servlet.http.HttpSession;
 import model.SuggestionBook;
 import model.User;
 
-@WebServlet("/suggestions/*")
+@WebServlet("/suggest-book/*")
 public class SuggestionServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
     private SuggestionDAO suggestionDAO;

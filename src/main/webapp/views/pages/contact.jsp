@@ -145,7 +145,7 @@
         <div class="suggestion-link-content">
             <h2>Want to Suggest a Book?</h2>
             <p>Help us grow our collection by suggesting books you'd like to see in our store</p>
-            <a href="${pageContext.request.contextPath}/suggest" class="btn btn-primary">Suggest a Book</a>
+            <a href="${pageContext.request.contextPath}/suggest-book" class="btn btn-primary">Suggest a Book</a>
         </div>
     </div>
 </section>

@@ -341,17 +341,17 @@
                     <div class="chart-card">
                         <div class="chart-header">
                             <h3>Monthly Revenue</h3>
-                        </div>
+                            </div>
                         <div class="chart-container">
                             <canvas id="monthlyRevenueChart"></canvas>
-                        </div>
-                    </div>
+                            </div>
+                            </div>
 
                     <!-- Customer Growth -->
                     <div class="chart-card">
                         <div class="chart-header">
                             <h3>Customer Growth</h3>
-                        </div>
+                            </div>
                         <div class="chart-container">
                             <canvas id="customerGrowthChart"></canvas>
                         </div>

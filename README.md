@@ -29,15 +29,26 @@ This project provides a complete online platform for browsing, purchasing, and m
 
 ## Project Members and Contributions
 
-Here's a breakdown of contributions by the team members:
+| S.N | Member Name | Member Tasks |
+|-----|-------------|--------------|
+| 1. | Abdul Razzaq Ansari (Leader) | • Created the repository and project structure<br>• Developed login/register UI and wireframe<br>• Implemented role-based authentication and authorization<br>• Developed admin dashboard UI and functionality<br>• Implemented CRUD operations for admin and user management<br>• Developed book management system (admin side)<br>• Implemented suggestion management system<br>• Created database schema and relationships<br>• Implemented error handling and validation<br>• Developed admin profile management |
+| 2. | Diamond Baruwal | • Implemented session management and cookies<br>• Developed UI and wireframes for home page<br>• Developed shopping cart functionality<br>• Implemented order management system<br>• Developed payment processing system<br>• Created order tracking functionality<br>• Implemented user order history<br>• Developed cart persistence across sessions<br>• Created order status management<br>• Implemented order notifications |
+| 3. | Krish Adhikari | • Developed UI and wireframe for about us page<br>• Implemented admin dashboard design<br>• Developed book search functionality<br>• Implemented book filtering system<br>• Created book category management<br>• Developed book status management (Bestseller, New Release, Deal)<br>• Implemented responsive design for all pages<br>• Created book image handling system<br>• Developed book recommendation system<br>• Implemented book rating system |
+| 4. | Nishant Shakya | • Developed UI and wireframes for all product pages<br>• Implemented book creation functionality (admin)<br>• Developed user creation system (admin)<br>• Created book listing and pagination<br>• Implemented book details page<br>• Developed book image upload system<br>• Created book inventory management<br>• Implemented book price management<br>• Developed book category pages<br>• Created book status management UI |
+| 5. | Saurab Basnet | • Developed wireframe for Contact Us page<br>• Implemented user profile management<br>• Developed user profile editing functionality<br>• Created book suggestion system<br>• Implemented contact form functionality<br>• Developed email notification system<br>• Created user feedback system<br>• Implemented password reset functionality<br>• Developed user account settings<br>• Created user activity logging |
 
-*   **Abdul Razzaq Ansari (Leader):** Led the project development. Primarily responsible for the design and functionality of all administrative pages (Dashboard, Books, Orders, Suggestions, Profile), ensuring a comprehensive and user-friendly admin interface.
-*   **Diamond Baruwal:** Developed and implemented the core shopping cart and order processing functionalities. Designed the user-facing pages related to the cart and orders, ensuring a smooth purchasing experience.
-*   **Nishant Shakya:** Focused on the frontend design and implementation of the main book browsing sections. Created the Home page and category-specific pages (Bestsellers, Deals, New Releases), ensuring books are displayed dynamically based on their status.
-*   **Krish Adhikari:** Developed the About Us page and played a key role in identifying and fixing errors across the application, with a particular focus on resolving issues within the administrative pages.
-*   **Saurab Basnet:** Created the Contact Page and implemented the functionality for book suggestions, ensuring suggestions are successfully stored in the database. Also contributed to integrating the contact form with email functionality.
-
-*(Other functionalities such as user registration/login flow, database connection utilities, error handling across the application, common header/sidebar components, basic styling and JavaScript interactions not specifically mentioned above were collaboratively developed and shared among the team members.)*
+### Additional Collaborative Efforts
+The following functionalities were developed collaboratively by the team:
+- Database connection utilities and connection pooling
+- Common UI components (header, footer, navigation)
+- Input validation and sanitization
+- Security measures and best practices
+- Documentation and code comments
+- Testing and bug fixes
+- Performance optimization
+- Cross-browser compatibility
+- Mobile responsiveness
+- Accessibility features
 
 ## Setup Instructions
 

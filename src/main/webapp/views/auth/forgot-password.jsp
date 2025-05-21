@@ -170,18 +170,18 @@
 
             <% if (request.getAttribute("errorMessage") != null) { %>
                 <div class="alert alert-danger">
-                    <i class="fas fa-exclamation-circle"></i>
+                        <i class="fas fa-exclamation-circle"></i>
                     <%= request.getAttribute("errorMessage") %>
-                </div>
+                    </div>
             <% } %>
-
+                
             <% if (request.getAttribute("successMessage") != null) { %>
                 <div class="alert alert-success">
-                    <i class="fas fa-check-circle"></i>
+                        <i class="fas fa-check-circle"></i>
                     <%= request.getAttribute("successMessage") %>
-                </div>
+                    </div>
             <% } %>
-
+                
             <form action="${pageContext.request.contextPath}/auth/forgot-password" method="post" class="auth-form">
                 <div class="form-group">
                     <label for="email">
@@ -190,15 +190,15 @@
                     <input type="email" id="email" name="email" required 
                            placeholder="Enter your registered email">
                 </div>
-
+                
                 <button type="submit" class="btn btn-primary">
                     <i class="fas fa-paper-plane"></i> Send Reset Link
                 </button>
-
+                
                 <div class="auth-links">
                     <a href="${pageContext.request.contextPath}/auth">
-                        <i class="fas fa-arrow-left"></i> Back to Login
-                    </a>
+                    <i class="fas fa-arrow-left"></i> Back to Login
+                </a>
                 </div>
             </form>
         </div>
