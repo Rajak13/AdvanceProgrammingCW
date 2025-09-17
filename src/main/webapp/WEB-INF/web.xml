@@ -15,7 +15,57 @@
         <session-timeout>30</session-timeout>
     </session-config>
 
+    <!-- Database Initialization Servlet -->
+    <servlet>
+        <servlet-name>DatabaseInitServlet</servlet-name>
+        <servlet-class>controller.DatabaseInitServlet</servlet-class>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>DatabaseInitServlet</servlet-name>
+        <url-pattern>/init-db</url-pattern>
+    </servlet-mapping>
 
+    <!-- Health Check Servlet -->
+    <servlet>
+        <servlet-name>HealthCheckServlet</servlet-name>
+        <servlet-class>controller.HealthCheckServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>HealthCheckServlet</servlet-name>
+        <url-pattern>/health</url-pattern>
+    </servlet-mapping>
+
+    <!-- Home Servlet -->
+    <servlet>
+        <servlet-name>HomeServlet</servlet-name>
+        <servlet-class>controller.HomeServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>HomeServlet</servlet-name>
+        <url-pattern>/</url-pattern>
+        <url-pattern>/home</url-pattern>
+    </servlet-mapping>
+
+    <!-- Auth Servlet -->
+    <servlet>
+        <servlet-name>AuthServlet</servlet-name>
+        <servlet-class>controller.AuthServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AuthServlet</servlet-name>
+        <url-pattern>/auth</url-pattern>
+    </servlet-mapping>
+
+    <!-- Auth Filter -->
+    <filter>
+        <filter-name>AuthFilter</filter-name>
+        <filter-class>filters.AuthFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>AuthFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
 
     <!-- Allow access to auth page -->
     <security-constraint>
