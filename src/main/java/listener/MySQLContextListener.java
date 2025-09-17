@@ -6,9 +6,9 @@ import java.sql.SQLException;
 import java.util.Enumeration;
 import java.util.logging.Logger;
 
-import jakarta.servlet.ServletContextEvent;
-import jakarta.servlet.ServletContextListener;
-import jakarta.servlet.annotation.WebListener;
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
+import javax.servlet.annotation.WebListener;
 
 @WebListener
 public class MySQLContextListener implements ServletContextListener {
