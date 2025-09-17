@@ -44,13 +44,26 @@ public class DBUtil {
 
     public static Connection getConnection() throws SQLException {
         try {
-            System.out.println("Attempting to connect to database: " + URL);
-            return DriverManager.getConnection(URL, USER, PASSWORD);
+            System.out.println("=== DATABASE CONNECTION ATTEMPT ===");
+            System.out.println("URL: " + URL);
+            System.out.println("User: " + USER);
+            System.out.println("Password length: " + (PASSWORD != null ? PASSWORD.length() : 0));
+            
+            // Check environment variables
+            System.out.println("MYSQL_URL env: " + (System.getenv("MYSQL_URL") != null ? "SET" : "NOT SET"));
+            System.out.println("DATABASE_URL env: " + (System.getenv("DATABASE_URL") != null ? "SET" : "NOT SET"));
+            
+            Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+            System.out.println("Database connection successful!");
+            return conn;
         } catch (SQLException e) {
-            System.err.println("Database connection failed!");
+            System.err.println("=== DATABASE CONNECTION FAILED ===");
             System.err.println("URL: " + URL);
             System.err.println("User: " + USER);
-            System.err.println("Error: " + e.getMessage());
+            System.err.println("SQLException: " + e.getMessage());
+            System.err.println("SQLState: " + e.getSQLState());
+            System.err.println("ErrorCode: " + e.getErrorCode());
+            e.printStackTrace();
             throw e;
         }
     }

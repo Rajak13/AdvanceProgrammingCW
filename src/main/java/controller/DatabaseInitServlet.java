@@ -16,9 +16,26 @@ public class DatabaseInitServlet extends HttpServlet {
     @Override
     public void init() throws ServletException {
         super.init();
-        System.out.println("Initializing database on application startup...");
-        DatabaseInitializer.initialize();
-        System.out.println("Database initialization completed.");
+        System.out.println("=== DATABASE INITIALIZATION STARTING ===");
+        
+        try {
+            // Test database connection first
+            System.out.println("Testing database connection...");
+            utils.DBUtil.getConnection().close();
+            System.out.println("Database connection successful!");
+            
+            // Initialize database
+            DatabaseInitializer.initialize();
+            System.out.println("=== DATABASE INITIALIZATION COMPLETED ===");
+            
+        } catch (Exception e) {
+            System.err.println("=== DATABASE INITIALIZATION FAILED ===");
+            System.err.println("Error: " + e.getMessage());
+            e.printStackTrace();
+            
+            // Don't throw exception - let app start anyway
+            System.err.println("Application will continue without database...");
+        }
     }
 
     @Override
